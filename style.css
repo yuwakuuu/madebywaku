@@ -256,6 +256,13 @@ body::before {
   animation: float 6s ease-in-out infinite;
 }
 @keyframes float { 50% { transform: translateY(-14px); } }
+.orb { display: grid; place-items: center; background: radial-gradient(circle at 35% 30%, rgba(167,139,250,.28), transparent 60%), radial-gradient(circle at 70% 75%, rgba(94,234,212,.2), transparent 55%), #0c0e16; }
+.orb-mono {
+  font: 700 clamp(2.4rem, 9vw, 5rem)/1 var(--display); letter-spacing: -.02em;
+  background: linear-gradient(175deg, #fff 0%, #c9cfdb 38%, #4a5163 52%, #e9ecf3 64%, #8b93a6 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 2px 0 rgba(255,255,255,.25)) drop-shadow(0 10px 24px rgba(0,0,0,.6));
+}
 .stage-hint {
   position: absolute; bottom: 4%; left: 50%; translate: -50% 0; white-space: nowrap;
   font: 400 .75rem/1 var(--mono); letter-spacing: .1em; color: var(--dim); text-transform: uppercase;

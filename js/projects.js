@@ -87,19 +87,6 @@ export const projects = [
     links: ['edgarbooks'],
   },
   {
-    id: 'halo',
-    title: 'Halo',
-    tag: 'App',
-    summary: 'A dating app for people who live at the gym. Check in where you train, see who else is there right now, and meet on the floor instead of in a chat thread.',
-    features: [
-      'Check in at your gym',
-      'Swipe on people who are at the same gym right now',
-      'Match, then meet in person on the floor',
-    ],
-    facts: { Type: 'Mobile app', Category: 'Dating', Hook: 'Location-based, right now' },
-    links: [],
-  },
-  {
     id: 'tob-company',
     title: 'The TOB Company',
     tag: 'Web',

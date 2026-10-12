@@ -437,6 +437,7 @@ function setupReveal() {
 
 function setupCounters() {
   const els = $$('[data-count]');
+  if (reduced) return; // markup already holds the final values
   const fmt = (n) => Math.round(n).toLocaleString('en-US');
   const run = (el) => {
     const to = Number(el.dataset.count);

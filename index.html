@@ -4,10 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>madebywaku</title>
-<meta name="description" content="madebywaku: Minecraft servers and plugins, an AI butler, market research, business software, websites and apps built by Waku.">
+<meta name="description" content="madebywaku: Minecraft servers and plugins, an AI butler, market research, business software and websites built by Waku.">
 <meta name="theme-color" content="#07080c">
 <meta property="og:title" content="madebywaku">
-<meta property="og:description" content="Minecraft servers, an AI butler, business software, websites and apps built by Waku.">
+<meta property="og:description" content="Minecraft servers, an AI butler, business software and websites built by Waku.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://yuwakuuu.github.io/madebywaku/">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%235eead4'/%3E%3Cstop offset='1' stop-color='%23a78bfa'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='%2307080c'/%3E%3Cpath d='M12 20l8 26 12-18 12 18 8-26' fill='none' stroke='url(%23g)' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
@@ -19,7 +19,8 @@
 <script type="importmap">
 {
   "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js"
+    "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
   }
 }
 </script>
@@ -75,9 +76,9 @@
 
     <div class="hero-stage">
       <div class="stage-glow" aria-hidden="true"></div>
-      <canvas id="hero3d" tabindex="0" role="img" aria-label="Rotating chrome sculpture. Drag to spin it, click or press Enter to pulse and change its shape."></canvas>
-      <div class="stage-fallback" aria-hidden="true"><div class="orb"></div></div>
-      <p class="stage-hint" aria-hidden="true"><span>drag</span> to spin &middot; <span>click</span> to morph</p>
+      <canvas id="hero3d" tabindex="0" role="img" aria-label="Chrome MBW monogram. Drag or use the arrow keys to spin it, click or press Enter to pulse it."></canvas>
+      <div class="stage-fallback" aria-hidden="true"><div class="orb"><span class="orb-mono">MBW</span></div></div>
+      <p class="stage-hint" aria-hidden="true"><span>drag</span> to spin &middot; <span>click</span> to pulse</p>
     </div>
 
     <a class="scroll-cue" href="#work" aria-label="Scroll to projects"><span></span></a>
@@ -93,13 +94,12 @@
         <span>Market research</span><i>&#10022;</i>
         <span>Accounting &amp; payroll</span><i>&#10022;</i>
         <span>Next.js sites</span><i>&#10022;</i>
-        <span>Mobile apps</span><i>&#10022;</i>
       </div>
     </div>
   </div>
 
   <section class="stats" aria-label="At a glance">
-    <div class="stat reveal"><strong><span data-count="8">8</span></strong><span>projects</span></div>
+    <div class="stat reveal"><strong><span data-count="7">7</span></strong><span>projects</span></div>
     <div class="stat reveal"><strong><span data-count="3">3</span></strong><span>plugins in the framework</span></div>
     <div class="stat reveal"><strong><span data-count="2">2</span></strong><span>editions: Java &amp; Bedrock</span></div>
     <div class="stat reveal"><strong>$<span data-count="0">0</span></strong><span>real money at risk in FIN</span></div>
@@ -109,7 +109,7 @@
     <header class="section-head">
       <p class="kicker reveal">01 &mdash; Work</p>
       <h2 id="work-title" class="reveal">Things I&rsquo;ve built</h2>
-      <p class="lede reveal">Eight projects across games, AI, finance, business and the web. Pick one to open the full story.</p>
+      <p class="lede reveal">Seven projects across games, AI, finance, business and the web. Pick one to open the full story.</p>
     </header>
 
     <div class="filters reveal" role="toolbar" aria-label="Filter projects">
@@ -117,7 +117,7 @@
       <button type="button" class="chip" data-filter="minecraft" aria-pressed="false">Minecraft</button>
       <button type="button" class="chip" data-filter="ai" aria-pressed="false">AI</button>
       <button type="button" class="chip" data-filter="business" aria-pressed="false">Business</button>
-      <button type="button" class="chip" data-filter="web" aria-pressed="false">Web &amp; apps</button>
+      <button type="button" class="chip" data-filter="web" aria-pressed="false">Web</button>
     </div>
 
     <ul class="grid" role="list">
@@ -205,25 +205,11 @@
           <span class="glare" aria-hidden="true"></span>
         </button>
       </li>
-      <li class="card-wrap reveal" data-cat="web" style="--i:6">
-        <button class="card" type="button" data-project="halo" style="--h1:290;--h2:350">
-          <span class="thumb"><span class="thumb-art"></span>
-            <svg class="thumb-icon" viewBox="0 0 48 48" aria-hidden="true"><ellipse cx="24" cy="10" rx="11" ry="3.5"/><path d="M24 42s-13-7.5-13-17a7 7 0 0 1 13-3.6A7 7 0 0 1 37 25c0 9.5-13 17-13 17z"/></svg>
-            <span class="thumb-num">07</span></span>
-          <span class="card-body">
-            <span class="tag">App</span>
-            <span class="card-title">Halo</span>
-            <span class="card-text">A gym dating app: check in at your gym, swipe on people there right now, and find your match on the floor.</span>
-            <span class="card-more">Open project <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
-          </span>
-          <span class="glare" aria-hidden="true"></span>
-        </button>
-      </li>
-      <li class="card-wrap reveal" data-cat="web ai" style="--i:7">
+      <li class="card-wrap reveal" data-cat="web ai" style="--i:6">
         <button class="card" type="button" data-project="tob-company" style="--h1:230;--h2:175">
           <span class="thumb"><span class="thumb-art"></span>
             <svg class="thumb-icon" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="17"/><path d="M7 24h34M24 7c5 5 7 11 7 17s-2 12-7 17c-5-5-7-11-7-17s2-12 7-17z"/></svg>
-            <span class="thumb-num">08</span></span>
+            <span class="thumb-num">07</span></span>
           <span class="card-body">
             <span class="tag">Web</span>
             <span class="card-title">The TOB Company</span>
