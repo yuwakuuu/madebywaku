@@ -779,7 +779,7 @@ function setupOffscreen() {
   const io = new IntersectionObserver((entries) => {
     for (const en of entries) en.target.classList.toggle('is-off', !en.isIntersecting);
   });
-  $$('.hero, .marquee, .svc-grid, .loop-stage, .contact-card, .grid').forEach((el) => io.observe(el));
+  $$('.hero, .marquee, .svc-grid, .svc-cta, .loop-stage, .contact-card, .grid').forEach((el) => io.observe(el));
 }
 
 /* ------------------------------------------------------------------ boot */

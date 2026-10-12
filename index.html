@@ -120,80 +120,103 @@
   </div>
 
   <section id="services" class="section services" aria-labelledby="services-title">
-    <header class="section-head">
+    <header class="section-head svc-head">
       <p class="kicker reveal">01 &mdash; Services</p>
-      <h2 id="services-title" class="reveal">What I can build for you</h2>
-      <p class="lede reveal">From a first website to a custom plugin or a finished mix. Every job is quoted up front, so you know the price before any work starts.</p>
+      <h2 id="services-title" class="reveal">Five crafts, <span class="svc-h-accent">one person.</span></h2>
+      <p class="lede reveal">Websites, software, games, sound and visuals for small businesses and individuals. Every job is quoted up front, so you know the price before any work starts.</p>
     </header>
-    <ul class="rate-badges reveal" role="list">
-      <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>Affordable, fixed-price quotes</li>
-      <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>Free quote within 24 hours</li>
-      <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20v-1a5 5 0 0 1 5-5h6a5 5 0 0 1 5 5v1M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg>Small businesses &amp; individuals welcome</li>
-    </ul>
+
+    <svg class="svc-defs" width="0" height="0" aria-hidden="true" focusable="false">
+      <defs>
+        <linearGradient id="svc-stroke" gradientUnits="userSpaceOnUse" x1="6" y1="6" x2="42" y2="42">
+          <stop offset="0" stop-color="#5eead4"/><stop offset=".55" stop-color="#c4d0f5"/><stop offset="1" stop-color="#a78bfa"/>
+        </linearGradient>
+      </defs>
+    </svg>
 
     <ul class="svc-grid" role="list">
-      <li class="svc reveal" style="--i:0;--h1:168;--h2:200">
-        <span class="svc-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="6" y="9" width="36" height="30" rx="4"/><path d="M6 17h36M11 13h.01M15 13h.01M19 24l-5 5 5 5M29 24l5 5-5 5M26 22l-4 14"/></svg></span>
-        <h3>Web design &amp; development</h3>
-        <p>Fast, modern websites that look right on every screen and turn visitors into customers.</p>
-        <ul class="svc-list" role="list">
-          <li>Business and portfolio sites</li>
-          <li>Landing pages and redesigns</li>
-          <li>Contact and quote-request forms</li>
-          <li>Launch and hosting help</li>
-        </ul>
+      <li class="svc-item reveal" style="--i:0">
+        <article class="svc" aria-labelledby="svc-web">
+          <div class="svc-top">
+            <span class="svc-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="6" y="9" width="36" height="30" rx="5"/><path d="M6 17h36M11.5 13h.01M16 13h.01M20 24l-5 4.5 5 4.5M28 24l5 4.5-5 4.5"/></svg></span>
+            <span class="svc-num" aria-hidden="true">01</span>
+          </div>
+          <h3 id="svc-web">Web design &amp; development</h3>
+          <p>Fast, modern websites that look sharp on every screen and win you customers.</p>
+          <ul class="svc-list" role="list">
+            <li>Business and portfolio sites</li>
+            <li>Landing pages and redesigns</li>
+            <li>Launch and hosting help</li>
+          </ul>
+        </article>
       </li>
-      <li class="svc reveal" style="--i:1;--h1:250;--h2:290">
-        <span class="svc-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="6" y="9" width="36" height="30" rx="4"/><path d="M13 19l6 5-6 5M23 30h12"/></svg></span>
-        <h3>Software &amp; automation</h3>
-        <p>Custom tools that save you time, built in Java and Python, with AI where it actually helps.</p>
-        <ul class="svc-list" role="list">
-          <li>Java and Python apps</li>
-          <li>Scripts that automate busywork</li>
-          <li>AI tools and assistants</li>
-          <li>Business software and dashboards</li>
-        </ul>
+      <li class="svc-item reveal" style="--i:1">
+        <article class="svc" aria-labelledby="svc-soft">
+          <div class="svc-top">
+            <span class="svc-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="6" y="9" width="36" height="30" rx="5"/><path d="M13 20l6 5-6 5M23 31h8M36 16l-3 6h5l-3 6"/></svg></span>
+            <span class="svc-num" aria-hidden="true">02</span>
+          </div>
+          <h3 id="svc-soft">Software &amp; automation</h3>
+          <p>Custom Java and Python tools that take repetitive work off your plate.</p>
+          <ul class="svc-list" role="list">
+            <li>Desktop and web apps</li>
+            <li>Scripts that automate busywork</li>
+            <li>AI tools and assistants</li>
+          </ul>
+        </article>
       </li>
-      <li class="svc reveal" style="--i:2;--h1:140;--h2:100">
-        <span class="svc-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M15 15h18a9 9 0 0 1 9 9v5a6 6 0 0 1-11 3.3L29 30H19l-2 2.3A6 6 0 0 1 6 29v-5a9 9 0 0 1 9-9zM15 21v6M12 24h6"/><circle cx="31" cy="22" r="1.5"/><circle cx="35" cy="26" r="1.5"/></svg></span>
-        <h3>Game development</h3>
-        <p>Minecraft servers and the plugins behind them, plus games and interactive projects.</p>
-        <ul class="svc-list" role="list">
-          <li>Custom Minecraft plugins in Java</li>
-          <li>Server setup and configuration</li>
-          <li>Java + Bedrock cross-play</li>
-          <li>Game prototypes and mechanics</li>
-        </ul>
+      <li class="svc-item reveal" style="--i:2">
+        <article class="svc" aria-labelledby="svc-game">
+          <div class="svc-top">
+            <span class="svc-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M16 15h16a10 10 0 0 1 10 10v4a6 6 0 0 1-10.8 3.6L29 30H19l-2.2 2.6A6 6 0 0 1 6 29v-4a10 10 0 0 1 10-10zM15 20v7M11.5 23.5h7M30 22h.01M34 26h.01"/></svg></span>
+            <span class="svc-num" aria-hidden="true">03</span>
+          </div>
+          <h3 id="svc-game">Game development</h3>
+          <p>Minecraft servers, custom plugins and games people actually want to play.</p>
+          <ul class="svc-list" role="list">
+            <li>Custom Minecraft plugins</li>
+            <li>Server setup and cross-play</li>
+            <li>Game prototypes and mechanics</li>
+          </ul>
+        </article>
       </li>
-      <li class="svc reveal" style="--i:3;--h1:320;--h2:20">
-        <span class="svc-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M6 24h3M13 17v14M19 10v28M25 16v16M31 12v24M37 19v10M42 24h0"/></svg></span>
-        <h3>Audio engineering</h3>
-        <p>Clean, balanced sound for music, podcasts, videos and games.</p>
-        <ul class="svc-list" role="list">
-          <li>Mixing and mastering</li>
-          <li>Sound design and effects</li>
-          <li>Audio editing and cleanup</li>
-          <li>Podcast and voice-over polish</li>
-        </ul>
+      <li class="svc-item reveal" style="--i:3">
+        <article class="svc" aria-labelledby="svc-audio">
+          <div class="svc-top">
+            <span class="svc-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M9 31v-6a15 15 0 0 1 30 0v6"/><rect x="7" y="28" width="8" height="12" rx="3"/><rect x="33" y="28" width="8" height="12" rx="3"/><path d="M21 31v3M24 28v9M27 31v3"/></svg></span>
+            <span class="svc-num" aria-hidden="true">04</span>
+          </div>
+          <h3 id="svc-audio">Audio engineering</h3>
+          <p>Clean, balanced sound for music, podcasts, video and games.</p>
+          <ul class="svc-list" role="list">
+            <li>Mixing and mastering</li>
+            <li>Sound design and effects</li>
+            <li>Voice and podcast cleanup</li>
+          </ul>
+        </article>
       </li>
-      <li class="svc reveal" style="--i:4;--h1:40;--h2:330">
-        <span class="svc-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="6" y="9" width="36" height="30" rx="4"/><circle cx="17" cy="19" r="3"/><path d="M6 33l10-9 8 7 6-5 12 10"/></svg></span>
-        <h3>Multimedia</h3>
-        <p>Visuals that make your brand look as good as the work behind it.</p>
-        <ul class="svc-list" role="list">
-          <li>Graphics and logos</li>
-          <li>Branding kits</li>
-          <li>Video and visual content</li>
-          <li>Social media assets</li>
-        </ul>
-      </li>
-      <li class="svc svc-cta reveal" style="--i:5">
-        <h3>Not sure what you need?</h3>
-        <p>Describe the problem and I&rsquo;ll suggest the simplest way to solve it. The quote is free and there&rsquo;s no obligation.</p>
-        <a class="btn primary magnetic" href="#contact"><span>Get a free quote</span>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      <li class="svc-item reveal" style="--i:4">
+        <article class="svc" aria-labelledby="svc-media">
+          <div class="svc-top">
+            <span class="svc-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="6" y="10" width="36" height="28" rx="5"/><path d="M21 19l9 5-9 5zM6 32h36M38 5l1.2 2.8L42 9l-2.8 1.2L38 13l-1.2-2.8L34 9l2.8-1.2z"/></svg></span>
+            <span class="svc-num" aria-hidden="true">05</span>
+          </div>
+          <h3 id="svc-media">Multimedia</h3>
+          <p>Graphics and video that make your brand look as good as your work.</p>
+          <ul class="svc-list" role="list">
+            <li>Logos and branding kits</li>
+            <li>Video and visual content</li>
+            <li>Social media assets</li>
+          </ul>
+        </article>
       </li>
     </ul>
+
+    <div class="svc-cta reveal">
+      <p class="svc-cta-text"><strong>Affordable, fixed-price quotes.</strong> <span>Free quote within 24 hours, no obligation.</span></p>
+      <a class="btn primary magnetic" href="#contact"><span>Get a quote</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+    </div>
   </section>
 
   <section class="why" aria-labelledby="why-title">
