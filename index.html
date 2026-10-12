@@ -36,11 +36,40 @@
   }
 }
 </script>
-<script>document.documentElement.classList.add('js');setTimeout(function(){if(!window.__mbw)document.documentElement.classList.remove('js')},3000);</script>
+<script>
+(function(){var d=document.documentElement;d.classList.add('js');setTimeout(function(){if(!window.__mbw)d.classList.remove('js')},3000);
+// startup intro: once per tab session, never for reduced motion or a deep link (the CSS fades it out on its own if scripts fail)
+var seen=false;try{seen=sessionStorage.getItem('mbw-intro')==='1'}catch(e){}
+if(!seen&&!location.hash&&!matchMedia('(prefers-reduced-motion: reduce)').matches)d.classList.add('intro-on');})();
+</script>
 <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js" crossorigin>
 <script type="module" src="js/main.js"></script>
 </head>
 <body>
+
+<div class="intro" id="intro">
+  <div class="intro-glow" aria-hidden="true"></div>
+  <div class="intro-mark" aria-hidden="true">
+    <svg class="intro-loop" viewBox="0 0 400 200">
+      <defs>
+        <linearGradient id="intro-grad" gradientUnits="userSpaceOnUse" x1="30" y1="0" x2="370" y2="0"><stop offset="0" stop-color="#5eead4"/><stop offset=".5" stop-color="#c4d0f5"/><stop offset="1" stop-color="#a78bfa"/></linearGradient>
+        <filter id="intro-blur" x="-20%" y="-40%" width="140%" height="180%"><feGaussianBlur stdDeviation="7"/></filter>
+      </defs>
+      <path class="intro-loop-glow" pathLength="1" filter="url(#intro-blur)" d="M370 100L368.1 122L362.5 142.3L353.9 159.7L343 173.4L330.7 182.9L317.8 188.3L304.8 190.2L292.2 188.9L280.1 185L268.9 179.1L258.4 171.7L248.6 163.1L239.4 153.6L230.9 143.5L222.8 133L215 122.1L207.4 111.1L200 100L192.6 88.9L185 77.9L177.2 67L169.1 56.5L160.6 46.4L151.4 36.9L141.6 28.3L131.1 20.9L119.9 15L107.8 11.1L95.2 9.8L82.2 11.7L69.3 17.1L57 26.6L46.1 40.3L37.5 57.7L31.9 78L30 100L31.9 122L37.5 142.3L46.1 159.7L57 173.4L69.3 182.9L82.2 188.3L95.2 190.2L107.8 188.9L119.9 185L131.1 179.1L141.6 171.7L151.4 163.1L160.6 153.6L169.1 143.5L177.2 133L185 122.1L192.6 111.1L200 100L207.4 88.9L215 77.9L222.8 67L230.9 56.5L239.4 46.4L248.6 36.9L258.4 28.3L268.9 20.9L280.1 15L292.2 11.1L304.8 9.8L317.8 11.7L330.7 17.1L343 26.6L353.9 40.3L362.5 57.7L368.1 78Z"/>
+      <path class="intro-loop-line" pathLength="1" d="M370 100L368.1 122L362.5 142.3L353.9 159.7L343 173.4L330.7 182.9L317.8 188.3L304.8 190.2L292.2 188.9L280.1 185L268.9 179.1L258.4 171.7L248.6 163.1L239.4 153.6L230.9 143.5L222.8 133L215 122.1L207.4 111.1L200 100L192.6 88.9L185 77.9L177.2 67L169.1 56.5L160.6 46.4L151.4 36.9L141.6 28.3L131.1 20.9L119.9 15L107.8 11.1L95.2 9.8L82.2 11.7L69.3 17.1L57 26.6L46.1 40.3L37.5 57.7L31.9 78L30 100L31.9 122L37.5 142.3L46.1 159.7L57 173.4L69.3 182.9L82.2 188.3L95.2 190.2L107.8 188.9L119.9 185L131.1 179.1L141.6 171.7L151.4 163.1L160.6 153.6L169.1 143.5L177.2 133L185 122.1L192.6 111.1L200 100L207.4 88.9L215 77.9L222.8 67L230.9 56.5L239.4 46.4L248.6 36.9L258.4 28.3L268.9 20.9L280.1 15L292.2 11.1L304.8 9.8L317.8 11.7L330.7 17.1L343 26.6L353.9 40.3L362.5 57.7L368.1 78Z"/>
+    </svg>
+    <p class="intro-mono"><span style="--i:0">M</span><span style="--i:1">B</span><span style="--i:2">W</span></p>
+  </div>
+  <div class="intro-foot">
+    <p class="intro-name" aria-hidden="true">made<span>by</span>waku</p>
+    <div class="intro-bar" aria-hidden="true"><span></span></div>
+    <p class="intro-skip" aria-hidden="true"><span class="v-click">Click</span><span class="v-tap">Tap</span> or press any key to skip</p>
+  </div>
+  <button class="intro-sound" type="button" hidden>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16 9.5a3.5 3.5 0 0 1 0 5M18.5 7a7 7 0 0 1 0 10"/></svg>
+    <span>Tap for sound</span>
+  </button>
+</div>
 
 <a class="skip" href="#services">Skip to content</a>
 
@@ -85,7 +114,7 @@
       <div class="cta">
         <a class="btn primary magnetic" href="#work"><span>View work</span>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-        <a class="btn ghost magnetic" href="#contact"><span>Get a quote</span></a>
+        <a class="btn ghost magnetic" href="#contact" data-sound="confirm"><span>Get a quote</span></a>
       </div>
       <ul class="hero-points" role="list">
         <li>Free quote within 24 hours</li>
@@ -214,7 +243,7 @@
 
     <div class="svc-cta reveal">
       <p class="svc-cta-text"><strong>Affordable, fixed-price quotes.</strong> <span>Free quote within 24 hours, no obligation.</span></p>
-      <a class="btn primary magnetic" href="#contact"><span>Get a quote</span>
+      <a class="btn primary magnetic" href="#contact" data-sound="confirm"><span>Get a quote</span>
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
     </div>
   </section>
@@ -411,14 +440,14 @@
       <h2 id="contact-title">Get a free quote.</h2>
       <p class="lede">Tell me what you need, your timeline and a rough budget if you have one. I&rsquo;ll reply within 24 hours with a clear, fixed-price quote.</p>
       <div class="cta">
-        <a class="btn primary magnetic" href="mailto:adrianjayala27@gmail.com?subject=Quote%20request%20(madebywaku)"><span>Email me for a quote</span>
+        <a class="btn primary magnetic" data-sound="confirm" href="mailto:adrianjayala27@gmail.com?subject=Quote%20request%20(madebywaku)"><span>Email me for a quote</span>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
       </div>
       <ul class="contact-links" role="list">
-        <li><a class="contact-link magnetic" href="mailto:adrianjayala27@gmail.com?subject=Quote%20request%20(madebywaku)">
+        <li><a class="contact-link magnetic" data-sound="confirm" href="mailto:adrianjayala27@gmail.com?subject=Quote%20request%20(madebywaku)">
           <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3.5 7l8.5 6 8.5-6"/></svg>
           <span><strong>Email</strong><small>adrianjayala27@gmail.com</small></span></a></li>
-        <li><button class="contact-link magnetic" type="button" data-copy="adrianjayala27@gmail.com">
+        <li><button class="contact-link magnetic" type="button" data-sound="confirm" data-copy="adrianjayala27@gmail.com">
           <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>
           <span><strong>Copy email address</strong><small>For webmail or your phone</small></span></button></li>
         <!-- TODO(discord): set href to the real Discord invite (https://discord.gg/...) and remove `hidden` from this <li> to show the button. -->

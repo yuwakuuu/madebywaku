@@ -19,56 +19,155 @@ let lastPointerType = 'mouse';
 window.addEventListener('pointerdown', (e) => { lastPointerType = e.pointerType; }, { capture: true, passive: true });
 
 /* ------------------------------------------------------------------ sound */
+// Every sound is synthesized with Web Audio (oscillators, filtered noise and a small generated
+// reverb); there are no audio files. Nothing is created until sound is switched on AND the
+// visitor has interacted with the page, so browsers never block or warn about autoplay.
 const sound = (() => {
-  let ctx = null, master = null, on = false, lastHover = 0;
+  let ctx = null, master = null, wet = null, noiseBuf = null, on = false;
+  const last = {};
   try { on = localStorage.getItem('mbw-sound') === 'on'; } catch { /* storage blocked */ }
 
+  // user activation: the browser's own flag where it exists, else the first real input
+  let gestured = false;
+  const mark = (e) => { if (e.type !== 'pointerdown' || e.pointerType === 'mouse') gestured = true; };
+  ['pointerdown', 'pointerup', 'keydown'].forEach((t) => window.addEventListener(t, mark, { capture: true, passive: true }));
+  const activated = () => navigator.userActivation?.hasBeenActive ?? gestured;
+
+  function impulse(c, sec) {   // a soft, darkening noise tail for the reverb
+    const n = Math.floor(sec * c.sampleRate), ir = c.createBuffer(2, n, c.sampleRate);
+    for (let ch = 0; ch < 2; ch++) {
+      const d = ir.getChannelData(ch);
+      let lp = 0;
+      for (let i = 0; i < n; i++) { lp += ((Math.random() * 2 - 1) - lp) * 0.35; d[i] = lp * Math.pow(1 - i / n, 3.2); }
+    }
+    return ir;
+  }
   function audio() {
+    if (!on || !activated()) return null;
     if (!ctx) {
       const AC = window.AudioContext || window.webkitAudioContext;
       if (!AC) return null;
-      ctx = new AC();
+      try { ctx = new AC(); } catch { return null; }
+      const comp = ctx.createDynamicsCompressor();
+      comp.threshold.value = -20; comp.knee.value = 12; comp.ratio.value = 4;
       master = ctx.createGain();
-      master.gain.value = 0.55;
-      master.connect(ctx.destination);
+      master.gain.value = 0.7;
+      master.connect(comp).connect(ctx.destination);
+      const verb = ctx.createConvolver();
+      verb.buffer = impulse(ctx, 1.6);
+      wet = ctx.createGain();
+      wet.gain.value = 0.3;
+      wet.connect(verb).connect(master);
+      noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
+      const d = noiseBuf.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
     }
-    if (ctx.state === 'suspended') ctx.resume();
+    if (ctx.state === 'suspended') ctx.resume().catch(() => {});
     return ctx;
   }
-  function tone({ f = 600, f2 = 0, d = 0.08, type = 'sine', g = 0.05, delay = 0 }) {
-    if (!on) return;
+  function out(c, node, verb) {
+    node.connect(master);
+    if (verb) { const send = c.createGain(); send.gain.value = verb; node.connect(send).connect(wet); }
+  }
+  // one enveloped oscillator
+  function tone({ f = 600, f2 = 0, d = 0.08, type = 'sine', g = 0.05, delay = 0, attack = 0.006, verb = 0 }) {
     const c = audio();
     if (!c) return;
-    const t = c.currentTime + delay;
+    const t = c.currentTime + 0.01 + delay;
     const o = c.createOscillator();
-    const gain = c.createGain();
+    const amp = c.createGain();
     o.type = type;
     o.frequency.setValueAtTime(f, t);
     if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + d);
-    gain.gain.setValueAtTime(0.0001, t);
-    gain.gain.exponentialRampToValueAtTime(g, t + 0.008);
-    gain.gain.exponentialRampToValueAtTime(0.0001, t + d);
-    o.connect(gain).connect(master);
+    amp.gain.setValueAtTime(0.0001, t);
+    amp.gain.exponentialRampToValueAtTime(g, t + attack);
+    amp.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    o.connect(amp);
+    out(c, amp, verb);
     o.start(t);
-    o.stop(t + d + 0.03);
+    o.stop(t + d + 0.05);
   }
+  // a glassy bell: the fundamental plus quick-fading octave and inharmonic partials
+  function bell(f, { d = 0.9, g = 0.03, delay = 0, verb = 0.6 } = {}) {
+    tone({ f, d, g, delay, attack: 0.004, verb });
+    tone({ f: f * 2, d: d * 0.45, g: g * 0.22, delay, attack: 0.003, verb });
+    tone({ f: f * 2.76, d: d * 0.28, g: g * 0.12, delay, attack: 0.002, verb });
+  }
+  // band-passed noise sweeping f0 -> f1: whooshes and air
+  function air({ f0 = 500, f1 = 2500, d = 0.5, g = 0.03, q = 1.1, delay = 0, peak = 0.45, verb = 0 }) {
+    const c = audio();
+    if (!c) return;
+    const t = c.currentTime + 0.01 + delay;
+    const src = c.createBufferSource();
+    src.buffer = noiseBuf;
+    const bp = c.createBiquadFilter();
+    bp.type = 'bandpass';
+    bp.Q.value = q;
+    bp.frequency.setValueAtTime(f0, t);
+    bp.frequency.exponentialRampToValueAtTime(f1, t + d);
+    const amp = c.createGain();
+    amp.gain.setValueAtTime(0.0001, t);
+    amp.gain.exponentialRampToValueAtTime(g, t + d * peak);
+    amp.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    src.connect(bp).connect(amp);
+    out(c, amp, verb);
+    src.start(t, Math.random() * 1.2);
+    src.stop(t + d + 0.05);
+  }
+  const throttled = (key, ms) => {
+    const now = performance.now();
+    if (now - (last[key] ?? -1e9) < ms) return true;
+    last[key] = now;
+    return false;
+  };
+
   return {
     get on() { return on; },
     set(v) {
       on = v;
       try { localStorage.setItem('mbw-sound', v ? 'on' : 'off'); } catch { /* ignore */ }
+      if (!v && ctx) ctx.suspend().catch(() => {});
+      document.dispatchEvent(new Event('mbw:sound'));
     },
-    hover() {
-      const now = performance.now();
-      if (now - lastHover < 70) return;
-      lastHover = now;
-      tone({ f: 1500, d: 0.035, g: 0.012, type: 'triangle' });
+    hover(card) {
+      if (throttled('hover', 70)) return;
+      if (card) tone({ f: 2350, d: 0.03, g: 0.009, attack: 0.002 });
+      else tone({ f: 1500, d: 0.035, g: 0.009, type: 'triangle', attack: 0.003 });
     },
-    click() { tone({ f: 380, f2: 760, d: 0.09, g: 0.05 }); },
-    open() { [523, 659, 784].forEach((f, i) => tone({ f, d: 0.22, g: 0.035, type: 'triangle', delay: i * 0.045 })); },
-    close() { tone({ f: 660, f2: 330, d: 0.12, g: 0.04, type: 'triangle' }); },
-    pulse() { tone({ f: 120, f2: 48, d: 0.45, g: 0.14 }); tone({ f: 900, f2: 1800, d: 0.2, g: 0.025, type: 'triangle', delay: 0.02 }); },
-    on_() { tone({ f: 660, d: 0.08, g: 0.045, type: 'triangle' }); tone({ f: 990, d: 0.12, g: 0.04, type: 'triangle', delay: 0.07 }); },
+    click() { if (!throttled('click', 40)) tone({ f: 1050, f2: 700, d: 0.06, g: 0.03, attack: 0.002 }); },
+    nav() { tone({ f: 620, f2: 930, d: 0.08, g: 0.024, type: 'triangle', attack: 0.004 }); air({ f0: 1800, f1: 3600, d: 0.12, g: 0.006, q: 2 }); },
+    open() {
+      [783.99, 987.77, 1174.66, 1567.98].forEach((f, i) => bell(f, { d: 1.1, g: 0.022 - i * 0.003, delay: i * 0.055, verb: 0.7 }));
+      air({ f0: 700, f1: 3200, d: 0.35, g: 0.01, q: 0.9 });
+    },
+    close() {
+      tone({ f: 880, f2: 520, d: 0.18, g: 0.026, type: 'triangle', attack: 0.004, verb: 0.3 });
+      air({ f0: 2600, f1: 600, d: 0.26, g: 0.009, q: 1 });
+    },
+    flip() { air({ f0: 1100, f1: 2800, d: 0.16, g: 0.011, q: 1.4 }); tone({ f: 1320, d: 0.04, g: 0.012, attack: 0.002 }); },
+    confirm() {
+      if (throttled('confirm', 250)) return;
+      bell(659.25, { d: 0.7, g: 0.028, verb: 0.5 });
+      bell(987.77, { d: 0.9, g: 0.026, delay: 0.085, verb: 0.55 });
+      bell(1318.51, { d: 1.1, g: 0.016, delay: 0.17, verb: 0.65 });
+    },
+    reveal() { if (!throttled('reveal', 1600)) air({ f0: 380, f1: 1500, d: 0.6, g: 0.012, q: 0.8, peak: 0.5, verb: 0.25 }); },
+    toggleOn() {
+      air({ f0: 600, f1: 3000, d: 0.3, g: 0.01, q: 1 });
+      bell(880, { d: 0.6, g: 0.026, verb: 0.5 });
+      bell(1318.51, { d: 0.9, g: 0.024, delay: 0.09, verb: 0.6 });
+    },
+    // the intro: an airy rise, a low swell and an E major pentatonic shimmer
+    intro() {
+      air({ f0: 220, f1: 4200, d: 1.4, g: 0.026, q: 0.7, peak: 0.72, verb: 0.4 });
+      tone({ f: 110, f2: 165, d: 1.5, g: 0.028, attack: 0.5 });
+      [659.25, 830.61, 987.77, 1244.51, 1318.51].forEach((f, i) => bell(f, { d: 1.3, g: 0.014, delay: 0.5 + i * 0.075, verb: 0.85 }));
+    },
+    outro() {
+      air({ f0: 2200, f1: 260, d: 0.6, g: 0.018, q: 0.8, peak: 0.3, verb: 0.3 });
+      tone({ f: 330, f2: 165, d: 0.55, g: 0.016, attack: 0.08 });
+    },
+    pulse() { tone({ f: 120, f2: 48, d: 0.45, g: 0.12 }); tone({ f: 900, f2: 1800, d: 0.2, g: 0.022, type: 'triangle', delay: 0.02 }); },
   };
 })();
 
@@ -84,19 +183,91 @@ function setupSoundToggle() {
     btn.setAttribute('aria-label', sound.on ? 'Sound effects on. Turn off' : 'Sound effects off. Turn on');
   };
   sync();
+  document.addEventListener('mbw:sound', sync);
   btn.addEventListener('click', () => {
     sound.set(!sound.on);
-    sync();
-    if (sound.on) sound.on_();
+    if (sound.on) sound.toggleOn();
     toast(sound.on ? 'Sound on' : 'Sound off');
   });
   const hoverables = 'a, button, .chip, [data-sound]';
   document.addEventListener('pointerover', (e) => {
     if (e.pointerType !== 'mouse' || !sound.on) return;
     const el = e.target.closest(hoverables);
-    if (el && !el.contains(e.relatedTarget)) sound.hover();
+    if (el && !el.contains(e.relatedTarget)) sound.hover(el.classList.contains('card'));
+  });
+  // navigation and quote/contact actions get their own sounds; other presses tick in setupPress
+  document.addEventListener('click', (e) => {
+    const el = e.target.closest('a, button');
+    if (!el || !sound.on) return;
+    if (el.matches('[data-sound="confirm"]')) sound.confirm();
+    else if (el.matches('.links a, .to-top, .scroll-cue, .skip')) sound.nav();
   });
 }
+
+/* ------------------------------------------------------------------ startup intro */
+// The overlay is switched on in <head> (html.intro-on) before first paint, so there is no flash and
+// no layout shift: the page renders and loads behind it. It hands over after ~2.4s, or at once on a
+// click, tap, key, wheel or swipe. Resolves when the hand-over starts, so the hero animates in as
+// the overlay fades.
+const INTRO_MS = 2400;
+const intro = (() => {
+  const el = $('#intro');
+  if (!el || !root.classList.contains('intro-on')) return Promise.resolve(false);
+  try { sessionStorage.setItem('mbw-intro', '1'); } catch { /* storage blocked: it shows again next load */ }
+
+  return new Promise((resolve) => {
+    const btn = $('.intro-sound', el);
+    let done = false;
+    const timer = setTimeout(() => leave(false), INTRO_MS);
+
+    // offer sound unless it is already on and audible
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (AC && !(sound.on && navigator.userActivation?.hasBeenActive)) btn.hidden = false;
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (!sound.on) sound.set(true);
+      sound.intro();
+      btn.classList.add('is-on');
+      btn.lastElementChild.textContent = 'Sound on';
+    });
+
+    const skip = () => leave(true);
+    const onKey = (e) => {
+      if (['Shift', 'Control', 'Alt', 'Meta', 'Tab'].includes(e.key)) return;
+      if (e.target === btn && (e.key === 'Enter' || e.key === ' ')) return;
+      leave(true);
+    };
+    el.addEventListener('click', skip);
+    window.addEventListener('keydown', onKey);
+    window.addEventListener('wheel', skip, { passive: true });
+    window.addEventListener('touchmove', skip, { passive: true });
+
+    function leave(fast) {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      el.removeEventListener('click', skip);
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('wheel', skip);
+      window.removeEventListener('touchmove', skip);
+      // fly the mark toward the hero monogram so the two read as one object
+      const mark = $('.intro-mark', el);
+      const target = $('#hero3d')?.getBoundingClientRect();
+      if (target && target.width && target.bottom > 0 && target.top < innerHeight) {
+        const m = mark.getBoundingClientRect();
+        mark.style.setProperty('--fx', `${(target.left + target.width / 2 - (m.left + m.width / 2)).toFixed(1)}px`);
+        mark.style.setProperty('--fy', `${(target.top + target.height / 2 - (m.top + m.height / 2)).toFixed(1)}px`);
+        mark.style.setProperty('--fs', (Math.min(target.width / m.width, 1.4)).toFixed(3));
+      }
+      if (el.contains(document.activeElement)) document.activeElement.blur();
+      el.classList.toggle('is-fast', fast);
+      root.classList.add('intro-out', 'hero-enter');
+      sound.outro();
+      resolve(true);
+      setTimeout(() => { el.remove(); root.classList.remove('intro-on', 'intro-out'); }, fast ? 450 : 800);
+    }
+  });
+})();
 
 /* ------------------------------------------------------------------ toast */
 let toastTimer = 0;
@@ -363,11 +534,14 @@ function setupTitle() {
     step();
   };
 
-  // letters animate in right away; the scramble waits for fonts so locked widths are right
-  chars.forEach((s) => s.classList.add('in'));
+  // letters animate in once the intro hands over (right away without one); the scramble also
+  // waits for fonts so locked widths are right, but never longer than 1.2s
   const run = () => chars.forEach((s, i) => setTimeout(() => scramble(s, 8 + ((i * 3) % 9)), i * 45));
-  // never wait longer than 1.2s
-  Promise.race([document.fonts?.ready ?? Promise.resolve(), new Promise((r) => setTimeout(r, 1200))]).then(run);
+  const fonts = Promise.race([document.fonts?.ready ?? Promise.resolve(), new Promise((r) => setTimeout(r, 1200))]);
+  intro.then(() => {
+    chars.forEach((s) => s.classList.add('in'));
+    fonts.then(run);
+  });
 
   chars.forEach((s) => s.addEventListener('pointerenter', () => { scramble(s, 8); }));
 }
@@ -455,7 +629,7 @@ function setupPress() {
     el.classList.remove('pressed');
     void el.offsetWidth;
     el.classList.add('pressed');
-    sound.click();
+    if (!el.matches('[data-sound="confirm"], .sound-toggle')) sound.click();
     buzz(10);
   });
   document.addEventListener('animationend', (e) => { if (e.animationName === 'press') e.target.classList.remove('pressed'); });
@@ -469,14 +643,18 @@ function setupPress() {
 function setupReveal() {
   const els = $$('.reveal');
   if (reduced || !('IntersectionObserver' in window)) { els.forEach((el) => el.classList.add('in')); return; }
+  // a soft whoosh as a new section scrolls in (section openers only, and throttled in sound.reveal)
+  const opener = '.kicker, .why-title, .contact-card';
   const io = new IntersectionObserver((entries) => {
     for (const en of entries) {
       if (!en.isIntersecting) continue;
       en.target.classList.add('in');
       io.unobserve(en.target);
+      if (scrollY > 40 && en.target.matches(opener)) sound.reveal();
     }
   }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
-  els.forEach((el) => io.observe(el));
+  // below-the-fold reveals wait for the intro so nothing plays unseen behind it
+  intro.then(() => els.forEach((el) => io.observe(el)));
 }
 
 function setupAboutWords() {
@@ -685,7 +863,7 @@ function setupModal() {
     swap(order[i]);
   }
   function swap(id) {
-    sound.click();
+    sound.flip();
     if (reduced) { fill(id); return; }
     inner.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'scale(.98)' }], { duration: 140, easing: 'ease-in' })
       .finished.then(() => {
