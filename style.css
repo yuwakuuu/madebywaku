@@ -346,7 +346,6 @@ h2 { font: 700 clamp(2.2rem, 5.2vw, 4rem)/1 var(--display); letter-spacing: -.03
 
 /* ============ cards ============ */
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 22px; }
-.card-wrap { perspective: 1000px; }
 .card-wrap.is-hidden { display: none; }
 .card {
   --rx: 0deg; --ry: 0deg; --gx: 50%; --gy: 50%; --go: 0;
@@ -356,11 +355,15 @@ h2 { font: 700 clamp(2.2rem, 5.2vw, 4rem)/1 var(--display); letter-spacing: -.03
   background: var(--panel);
   border: 1px solid var(--line);
   overflow: hidden; isolation: isolate;
-  transform: rotateX(var(--rx)) rotateY(var(--ry));
-  transform-style: preserve-3d;
+  /* flat at rest: a resting 3D transform (and 3D children) inside this rounded overflow clip made the
+     compositor split the card into separate layers that tore at the corners while the reveal faded in */
+  transform: none;
   transition: transform .6s var(--ease), border-color .3s, box-shadow .4s;
 }
-.card.is-tilting { transition: transform .12s linear, border-color .3s, box-shadow .4s; }
+.card.is-tilting {
+  transform: perspective(1000px) rotateX(var(--rx)) rotateY(var(--ry));
+  transition: transform .12s linear, border-color .3s, box-shadow .4s;
+}
 .card::before {
   /* animated gradient border via @property */
   content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1px; z-index: 3; pointer-events: none;
@@ -375,9 +378,16 @@ h2 { font: 700 clamp(2.2rem, 5.2vw, 4rem)/1 var(--display); letter-spacing: -.03
 .glare {
   position: absolute; inset: 0; z-index: 4; pointer-events: none; border-radius: inherit;
   background: radial-gradient(circle at var(--gx) var(--gy), rgba(255,255,255,.22), rgba(255,255,255,0) 45%);
-  opacity: var(--go); transition: opacity .4s; mix-blend-mode: overlay;
+  opacity: var(--go); mix-blend-mode: overlay;
+  /* not painted (so not blended or composited) until a pointer is on the card; visibility waits out the fade */
+  visibility: hidden; transition: opacity .4s, visibility 0s .4s;
 }
-.thumb { position: relative; display: grid; place-items: center; aspect-ratio: 16 / 9; overflow: hidden; }
+.card:hover .glare, .card.is-tilting .glare { visibility: visible; transition: opacity .4s, visibility 0s; }
+.thumb {
+  position: relative; display: grid; place-items: center; aspect-ratio: 16 / 9; overflow: hidden;
+  /* round its own top corners so neither a lagging parent clip nor the modal view-transition snapshot shows square ones */
+  border-radius: calc(var(--radius) - 1px) calc(var(--radius) - 1px) 0 0;
+}
 .thumb-art {
   position: absolute; inset: 0;
   background:
@@ -399,10 +409,9 @@ h2 { font: 700 clamp(2.2rem, 5.2vw, 4rem)/1 var(--display); letter-spacing: -.03
 .thumb-icon {
   position: relative; width: 74px; height: 74px; fill: none; stroke: #fff; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;
   filter: drop-shadow(0 6px 20px rgba(0,0,0,.4));
-  transform: translateZ(40px);
   transition: transform .6s var(--spring);
 }
-.card:hover .thumb-icon { transform: translateZ(40px) scale(1.12) rotate(-4deg); }
+.card:hover .thumb-icon { transform: scale(1.12) rotate(-4deg); }
 .thumb-num { position: absolute; top: 14px; left: 16px; font: 500 .75rem/1 var(--mono); letter-spacing: .1em; color: rgba(255,255,255,.75); }
 .card-body { position: relative; display: flex; flex-direction: column; gap: 10px; padding: 22px 24px 24px; flex: 1; }
 .tag {
