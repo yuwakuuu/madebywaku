@@ -8,6 +8,10 @@ const root = document.documentElement;
 const mq = (q) => window.matchMedia(q).matches;
 const reduced = mq('(prefers-reduced-motion: reduce)');
 const finePointer = mq('(hover: hover) and (pointer: fine)');
+// touch or low-power hardware: fewer particles, lower canvas resolution, lighter 3D
+const lowPower = (navigator.hardwareConcurrency || 8) <= 4 || (navigator.deviceMemory || 8) <= 4 || !!navigator.connection?.saveData;
+const lite = !finePointer || lowPower;
+if (lite) root.classList.add('lite');
 const sda = window.CSS?.supports?.('animation-timeline: view()') ?? false;
 if (sda) root.classList.add('sda');
 
@@ -141,7 +145,7 @@ function setupCursor() {
 
   document.addEventListener('pointerover', (e) => {
     const labelled = e.target.closest('[data-cursor]');
-    const hot = e.target.closest('a, button, .chip, canvas#hero3d');
+    const hot = e.target.closest('a, button, .chip, .chrome-canvas');
     cur.classList.toggle('is-label', !!labelled);
     cur.classList.toggle('is-hover', !!hot && !labelled);
     label.textContent = labelled ? labelled.dataset.cursor : '';
@@ -172,70 +176,97 @@ function setupCursor() {
 }
 
 /* ------------------------------------------------------------------ particles + click sparks */
+// Typed arrays and pre-built colour strings, so a frame allocates nothing. Links are
+// bucketed by alpha and stroked as one path per bucket instead of one path per pair.
 const fx = (() => {
   const c = $('.particles');
   const g = c.getContext('2d');
-  let w = 0, h = 0, dpr = 1, ps = [], raf = 0;
+  const mouseFx = finePointer;
+  const MAX = 90, LINK = 9000, NEAR = 26000, BUCKETS = 4, SEG = 700;
+  const px = new Float32Array(MAX), py = new Float32Array(MAX), vx = new Float32Array(MAX), vy = new Float32Array(MAX);
+  const pr = new Float32Array(MAX), pz = new Float32Array(MAX), sy = new Float32Array(MAX);
+  const fill = new Array(MAX);
+  const segs = Array.from({ length: BUCKETS }, () => ({ xy: new Float32Array(SEG * 4), n: 0 }));
+  const linkStyle = Array.from({ length: BUCKETS }, (_, b) => `rgba(167, 139, 250, ${(((b + 0.5) / BUCKETS) * 0.12).toFixed(3)})`);
+  const nearStyle = Array.from({ length: BUCKETS }, (_, b) => `rgba(94, 234, 212, ${(((b + 0.5) / BUCKETS) * 0.3).toFixed(3)})`);
   const sparks = [];
   const mouse = { x: -9999, y: -9999 };
-  const mobile = !finePointer;
+  let w = 0, h = 0, n = 0, raf = 0, last = 0, scrollY = window.scrollY, paused = false;
+  // 30fps is plenty for slow drifting dots on phones and low-power machines
+  const minFrame = lite ? 1000 / 31 : 0;
 
   function seed() {
-    const n = Math.round(Math.min(mobile ? 45 : 100, (w * h) / (mobile ? 16000 : 13000)));
-    ps = Array.from({ length: n }, () => ({
-      x: Math.random() * w, y: Math.random() * h,
-      vx: (Math.random() - 0.5) * 0.22, vy: (Math.random() - 0.5) * 0.22,
-      r: Math.random() * 1.3 + 0.4, z: Math.random() * 0.8 + 0.2,
-      hue: Math.random() < 0.55 ? 168 : 258,
-    }));
+    const cap = lite ? (finePointer ? 40 : 26) : 72;
+    n = Math.round(Math.min(cap, (w * h) / (finePointer ? 16000 : 15000)));
+    for (let i = 0; i < n; i++) {
+      px[i] = Math.random() * w; py[i] = Math.random() * h;
+      vx[i] = (Math.random() - 0.5) * 0.22; vy[i] = (Math.random() - 0.5) * 0.22;
+      pz[i] = Math.random() * 0.8 + 0.2;
+      pr[i] = (Math.random() * 1.3 + 0.4) * pz[i] + 0.3;
+      fill[i] = `hsla(${Math.random() < 0.55 ? 168 : 258}, 85%, 75%, ${(0.25 + pz[i] * 0.45).toFixed(2)})`;
+    }
   }
   function resize() {
     const nw = innerWidth, nh = innerHeight;
     const widthChanged = nw !== w;
     w = nw; h = nh;
-    dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-    c.width = w * dpr; c.height = h * dpr;
+    const dpr = Math.min(window.devicePixelRatio || 1, lite ? 1 : 1.5);
+    c.width = Math.round(w * dpr); c.height = Math.round(h * dpr);
     g.setTransform(dpr, 0, 0, dpr, 0, 0);
-    if (widthChanged || !ps.length) seed();
+    if (widthChanged || !n) seed();
     if (reduced) draw();
+  }
+
+  function addSeg(strength, ax, ay, bx, by) {
+    const s = segs[Math.min(BUCKETS - 1, (strength * BUCKETS) | 0)];
+    if (s.n >= SEG) return;
+    const o = s.n++ * 4;
+    s.xy[o] = ax; s.xy[o + 1] = ay; s.xy[o + 2] = bx; s.xy[o + 3] = by;
+  }
+  function strokeSegs(styles) {
+    for (let b = 0; b < BUCKETS; b++) {
+      const s = segs[b];
+      if (!s.n) continue;
+      g.strokeStyle = styles[b];
+      g.beginPath();
+      for (let k = 0; k < s.n; k++) { const o = k * 4; g.moveTo(s.xy[o], s.xy[o + 1]); g.lineTo(s.xy[o + 2], s.xy[o + 3]); }
+      g.stroke();
+      s.n = 0;
+    }
   }
 
   function draw() {
     g.clearRect(0, 0, w, h);
-    const sy = window.scrollY;
-    const pos = [];
-    for (const p of ps) {
+    const off = scrollY * 0.12;
+    for (let i = 0; i < n; i++) {
       if (!reduced) {
-        p.x += p.vx; p.y += p.vy;
-        const dx = p.x - mouse.x, dy = (((p.y - sy * 0.12 * p.z) % h) + h) % h - mouse.y;
-        const d2 = dx * dx + dy * dy;
-        if (d2 < 14000) { const f = (1 - d2 / 14000) * 0.6; p.x += (dx / Math.sqrt(d2 + 1)) * f; p.y += (dy / Math.sqrt(d2 + 1)) * f; }
-        if (p.x < -10) p.x = w + 10; else if (p.x > w + 10) p.x = -10;
-        if (p.y < -10) p.y = h + 10; else if (p.y > h + 10) p.y = -10;
+        px[i] += vx[i]; py[i] += vy[i];
+        if (mouseFx) {
+          const dx = px[i] - mouse.x, dy = sy[i] - mouse.y, d2 = dx * dx + dy * dy;
+          if (d2 < 14000) { const f = ((1 - d2 / 14000) * 0.6) / Math.sqrt(d2 + 1); px[i] += dx * f; py[i] += dy * f; }
+        }
+        if (px[i] < -10) px[i] = w + 10; else if (px[i] > w + 10) px[i] = -10;
+        if (py[i] < -10) py[i] = h + 10; else if (py[i] > h + 10) py[i] = -10;
       }
-      const y = (((p.y - sy * 0.12 * p.z) % h) + h) % h;
-      pos.push([p.x, y, p]);
-      g.fillStyle = `hsla(${p.hue}, 85%, 75%, ${0.25 + p.z * 0.45})`;
-      g.beginPath(); g.arc(p.x, y, p.r * p.z + 0.3, 0, Math.PI * 2); g.fill();
+      sy[i] = (((py[i] - off * pz[i]) % h) + h) % h;
+      g.fillStyle = fill[i];
+      g.beginPath(); g.arc(px[i], sy[i], pr[i], 0, 6.2832); g.fill();
     }
-    if (!mobile) {
+    if (mouseFx) {
       g.lineWidth = 0.6;
-      for (let i = 0; i < pos.length; i++) {
-        const [ax, ay] = pos[i];
-        for (let j = i + 1; j < pos.length; j++) {
-          const dx = ax - pos[j][0], dy = ay - pos[j][1];
-          const d2 = dx * dx + dy * dy;
-          if (d2 < 9000) {
-            g.strokeStyle = `rgba(167, 139, 250, ${(1 - d2 / 9000) * 0.12})`;
-            g.beginPath(); g.moveTo(ax, ay); g.lineTo(pos[j][0], pos[j][1]); g.stroke();
-          }
-        }
-        const mx = ax - mouse.x, my = ay - mouse.y, md = mx * mx + my * my;
-        if (md < 26000) {
-          g.strokeStyle = `rgba(94, 234, 212, ${(1 - md / 26000) * 0.3})`;
-          g.beginPath(); g.moveTo(ax, ay); g.lineTo(mouse.x, mouse.y); g.stroke();
+      for (let i = 0; i < n; i++) {
+        const ax = px[i], ay = sy[i];
+        for (let j = i + 1; j < n; j++) {
+          const dx = ax - px[j], dy = ay - sy[j], d2 = dx * dx + dy * dy;
+          if (d2 < LINK) addSeg(1 - d2 / LINK, ax, ay, px[j], sy[j]);
         }
       }
+      strokeSegs(linkStyle);
+      for (let i = 0; i < n; i++) {
+        const mx = px[i] - mouse.x, my = sy[i] - mouse.y, md = mx * mx + my * my;
+        if (md < NEAR) addSeg(1 - md / NEAR, px[i], sy[i], mouse.x, mouse.y);
+      }
+      strokeSegs(nearStyle);
     }
     for (let i = sparks.length - 1; i >= 0; i--) {
       const s = sparks[i];
@@ -244,36 +275,46 @@ const fx = (() => {
       s.vx *= 0.95; s.vy = s.vy * 0.95 + 0.12;
       s.x += s.vx; s.y += s.vy;
       const a = s.life / s.max;
-      g.strokeStyle = `hsla(${s.hue}, 95%, 72%, ${a})`;
+      g.strokeStyle = s.style;
+      g.globalAlpha = a;
       g.lineWidth = 2 * a + 0.4;
       g.beginPath(); g.moveTo(s.x, s.y); g.lineTo(s.x - s.vx * 2.2, s.y - s.vy * 2.2); g.stroke();
     }
+    g.globalAlpha = 1;
   }
-  function loop() {
+  function loop(now) {
     raf = 0;
-    if (document.hidden) return;
-    draw();
+    if (document.hidden || paused) return;
     raf = requestAnimationFrame(loop);
+    if (now - last < minFrame) return;
+    last = now;
+    draw();
   }
-  function start() { if (!reduced && !raf) raf = requestAnimationFrame(loop); }
+  function start() { if (!reduced && !raf && !paused && !document.hidden) raf = requestAnimationFrame(loop); }
 
   resize();
-  window.addEventListener('resize', resize);
-  window.addEventListener('pointermove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; }, { passive: true });
-  document.addEventListener('pointerleave', () => { mouse.x = mouse.y = -9999; });
+  let resizeRaf = 0;
+  window.addEventListener('resize', () => { cancelAnimationFrame(resizeRaf); resizeRaf = requestAnimationFrame(resize); }, { passive: true });
+  window.addEventListener('scroll', () => { scrollY = window.scrollY; }, { passive: true });
+  if (mouseFx) {
+    window.addEventListener('pointermove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; }, { passive: true });
+    document.addEventListener('pointerleave', () => { mouse.x = mouse.y = -9999; });
+  }
   document.addEventListener('visibilitychange', start);
   start();
 
   return {
-    burst(x, y, n = 14) {
+    burst(x, y, count = 14) {
       if (reduced) return;
-      for (let i = 0; i < n; i++) {
-        const a = (i / n) * Math.PI * 2 + Math.random() * 0.4;
+      for (let i = 0; i < count; i++) {
+        const a = (i / count) * Math.PI * 2 + Math.random() * 0.4;
         const v = 2.5 + Math.random() * 4;
-        sparks.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 1.5, life: 0.7, max: 0.7, hue: Math.random() < 0.5 ? 168 : 270 });
+        sparks.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 1.5, life: 0.7, max: 0.7, style: Math.random() < 0.5 ? 'hsl(168, 95%, 72%)' : 'hsl(270, 95%, 72%)' });
       }
       start();
     },
+    // stop drawing while something covers the page (the project modal)
+    pause(v) { paused = v; if (!v) start(); },
   };
 })();
 
@@ -322,13 +363,10 @@ function setupTitle() {
     step();
   };
 
-  const run = () => {
-    chars.forEach((s, i) => {
-      s.classList.add('in');
-      setTimeout(() => scramble(s, 8 + ((i * 3) % 9)), i * 45);
-    });
-  };
-  // wait for fonts so locked widths are correct, but never longer than 1.2s
+  // letters animate in right away; the scramble waits for fonts so locked widths are right
+  chars.forEach((s) => s.classList.add('in'));
+  const run = () => chars.forEach((s, i) => setTimeout(() => scramble(s, 8 + ((i * 3) % 9)), i * 45));
+  // never wait longer than 1.2s
   Promise.race([document.fonts?.ready ?? Promise.resolve(), new Promise((r) => setTimeout(r, 1200))]).then(run);
 
   chars.forEach((s) => s.addEventListener('pointerenter', () => { scramble(s, 8); }));
@@ -352,13 +390,15 @@ function setupMagnetic() {
   const kick = () => { if (!raf) raf = requestAnimationFrame(tick); };
   for (const it of items) {
     const strength = it.el.classList.contains('contact-link') ? 0.12 : 0.32;
+    let b = null;
+    it.el.addEventListener('pointerenter', () => { b = it.el.getBoundingClientRect(); }, { passive: true });
     it.el.addEventListener('pointermove', (e) => {
-      const b = it.el.getBoundingClientRect();
+      b ??= it.el.getBoundingClientRect();
       it.tx = (e.clientX - (b.left + b.width / 2)) * strength;
       it.ty = (e.clientY - (b.top + b.height / 2)) * strength;
       kick();
-    });
-    it.el.addEventListener('pointerleave', () => { it.tx = 0; it.ty = 0; kick(); });
+    }, { passive: true });
+    it.el.addEventListener('pointerleave', () => { b = null; it.tx = 0; it.ty = 0; kick(); });
   }
 }
 
@@ -367,14 +407,16 @@ function setupTilt() {
   if (!finePointer || reduced) return;
   $$('.card').forEach((card) => {
     card.dataset.cursor = 'Open';
-    let frame = 0;
+    let frame = 0, b = null, ex = 0, ey = 0;
+    card.addEventListener('pointerenter', () => { b = null; }, { passive: true });
     card.addEventListener('pointermove', (e) => {
+      ex = e.clientX; ey = e.clientY;
       if (frame) return;
       frame = requestAnimationFrame(() => {
         frame = 0;
-        const b = card.getBoundingClientRect();
-        const px = (e.clientX - b.left) / b.width;
-        const py = (e.clientY - b.top) / b.height;
+        b ??= card.getBoundingClientRect();
+        const px = (ex - b.left) / b.width;
+        const py = (ey - b.top) / b.height;
         card.classList.add('is-tilting');
         card.style.setProperty('--ry', `${(px - 0.5) * 14}deg`);
         card.style.setProperty('--rx', `${(0.5 - py) * 12}deg`);
@@ -383,9 +425,11 @@ function setupTilt() {
         card.style.setProperty('--go', '1');
         card.style.setProperty('--tx', `${20 + px * 60}%`);
       });
-    });
+    }, { passive: true });
+    // the cached rect goes stale if the page scrolls under a hovered card
+    window.addEventListener('scroll', () => { b = null; }, { passive: true });
     card.addEventListener('pointerleave', () => {
-      cancelAnimationFrame(frame); frame = 0;
+      cancelAnimationFrame(frame); frame = 0; b = null;
       card.classList.remove('is-tilting');
       ['--rx', '--ry', '--go', '--tx'].forEach((p) => card.style.removeProperty(p));
     });
@@ -494,7 +538,11 @@ function setupScroll() {
   const progress = $('.progress');
   const track = $('.marquee-track');
   const links = $('#links');
-  let lastY = scrollY, skew = 0, raf = 0;
+  let lastY = scrollY, skew = 0, raf = 0, max = 0;
+  const measure = () => { max = document.documentElement.scrollHeight - innerHeight; };
+  measure();
+  new ResizeObserver(measure).observe(document.body);
+  window.addEventListener('resize', measure, { passive: true });
 
   const loop = () => {
     raf = 0;
@@ -506,7 +554,6 @@ function setupScroll() {
     if (dy < -4 || y < 600) nav.classList.remove('is-hidden');
 
     if (!sda) {
-      const max = document.documentElement.scrollHeight - innerHeight;
       progress.style.setProperty('--p', max > 0 ? (y / max).toFixed(4) : '0');
       if (!reduced) {
         const k = Math.min(y / innerHeight, 1);
@@ -636,6 +683,7 @@ function setupModal() {
       fill(id);
       dlg.showModal();
     }
+    fx.pause(true);
   }
 
   function close() {
@@ -675,6 +723,7 @@ function setupModal() {
   $('.modal-prev', dlg).addEventListener('click', () => step(-1));
   $('.modal-next', dlg).addEventListener('click', () => step(1));
   dlg.addEventListener('cancel', (e) => { e.preventDefault(); close(); });
+  dlg.addEventListener('close', () => fx.pause(false));
   dlg.addEventListener('click', (e) => {
     if (e.target === dlg) close();
     const go = e.target.closest('[data-goto]');
@@ -704,18 +753,22 @@ function setupContact() {
   }));
 }
 
-/* ------------------------------------------------------------------ 3D hero */
-function setupHero() {
-  const canvas = $('#hero3d');
-  const stage = $('.hero-stage');
-  canvas.dataset.cursor = 'Drag';
-  let gl = false;
-  try {
-    const c = document.createElement('canvas');
-    gl = !!(c.getContext('webgl2') || c.getContext('webgl'));
-  } catch { gl = false; }
-  if (!gl) { root.classList.add('no-webgl'); return; }
+/* ------------------------------------------------------------------ 3D: hero monogram + infinity loop */
+let glOk = null;
+function hasWebGL() {
+  if (glOk === null) {
+    try {
+      const c = document.createElement('canvas');
+      glOk = !!(c.getContext('webgl2') || c.getContext('webgl'));
+    } catch { glOk = false; }
+  }
+  return glOk;
+}
 
+function mountStage(canvas, load) {
+  const stage = canvas.closest('[data-stage]');
+  canvas.dataset.cursor = 'Drag';
+  if (!hasWebGL()) { stage.classList.add('no-webgl'); return; }
   let pulseTimer = 0;
   const onPulse = () => {
     sound.pulse();
@@ -724,12 +777,37 @@ function setupHero() {
     clearTimeout(pulseTimer);
     pulseTimer = setTimeout(() => stage.classList.remove('is-pulse'), 120);
   };
-  import('./hero3d.js')
-    .then((m) => m.initHero(canvas, { reduced, onPulse }))
+  load()
+    .then((init) => init(canvas, { reduced, lite, onPulse }))
     .catch((err) => {
-      console.warn('3D hero unavailable, using fallback.', err);
-      root.classList.add('no-webgl');
+      console.warn('3D scene unavailable, using fallback.', err);
+      stage.classList.add('no-webgl');
     });
+}
+
+function setupHero() {
+  mountStage($('#hero3d'), () => import('./hero3d.js').then((m) => m.initHero));
+}
+
+// the infinity loop (and its WebGL context) only spins up once its section is near the viewport
+function setupLoop() {
+  const canvas = $('#loop3d');
+  const go = () => mountStage(canvas, () => import('./infinity3d.js').then((m) => m.initInfinity));
+  if (!('IntersectionObserver' in window)) { go(); return; }
+  const io = new IntersectionObserver(([en]) => {
+    if (!en.isIntersecting) return;
+    io.disconnect();
+    go();
+  }, { rootMargin: '600px 0px' });
+  io.observe(canvas);
+}
+
+// pause decorative CSS animations in blocks that are off screen
+function setupOffscreen() {
+  const io = new IntersectionObserver((entries) => {
+    for (const en of entries) en.target.classList.toggle('is-off', !en.isIntersecting);
+  });
+  $$('.hero, .marquee, .loop-stage, .contact-card, .grid').forEach((el) => io.observe(el));
 }
 
 /* ------------------------------------------------------------------ boot */
@@ -737,6 +815,8 @@ $('#year').textContent = new Date().getFullYear();
 setupSoundToggle();
 setupTitle();
 setupHero();
+setupLoop();
+setupOffscreen();
 setupCursor();
 setupMagnetic();
 setupTilt();
