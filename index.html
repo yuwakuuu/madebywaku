@@ -1,125 +1,334 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>madebywaku</title>
+<meta name="description" content="madebywaku: Minecraft servers and plugins, an AI butler, market research, business software, websites and apps built by Waku.">
+<meta name="theme-color" content="#07080c">
+<meta property="og:title" content="madebywaku">
+<meta property="og:description" content="Minecraft servers, an AI butler, business software, websites and apps built by Waku.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://yuwakuuu.github.io/madebywaku/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%235eead4'/%3E%3Cstop offset='1' stop-color='%23a78bfa'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='%2307080c'/%3E%3Cpath d='M12 20l8 26 12-18 12 18 8-26' fill='none' stroke='url(%23g)' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js"
+  }
+}
+</script>
+<script>document.documentElement.classList.add('js');setTimeout(function(){if(!window.__mbw)document.documentElement.classList.remove('js')},3000);</script>
+<script type="module" src="js/main.js"></script>
 </head>
 <body>
 
-<header class="nav">
-  <a class="logo" href="#top">madebywaku</a>
-  <nav>
-    <a href="#work">Work</a>
-    <a href="#about">About</a>
-    <a href="#contact">Contact</a>
+<a class="skip" href="#work">Skip to projects</a>
+
+<canvas class="particles" aria-hidden="true"></canvas>
+<div class="progress" aria-hidden="true"></div>
+<div class="cursor is-hidden" aria-hidden="true"><div class="cursor-ring"><span class="cursor-label"></span></div><div class="cursor-dot"></div></div>
+<canvas class="cursor-trail" aria-hidden="true"></canvas>
+<div class="noise" aria-hidden="true"></div>
+
+<header class="nav" id="nav">
+  <a class="logo magnetic" href="#top" aria-label="madebywaku, back to top">
+    <svg viewBox="0 0 64 64" aria-hidden="true"><path d="M12 20l8 26 12-18 12 18 8-26"/></svg>
+    <span>madebywaku</span>
+  </a>
+  <nav class="links" id="links" aria-label="Main">
+    <a href="#work" data-nav>Work</a>
+    <a href="#about" data-nav>About</a>
+    <a href="#contact" data-nav>Contact</a>
   </nav>
+  <div class="nav-tools">
+    <button class="icon-btn sound-toggle" type="button" aria-pressed="false" aria-label="Sound effects off. Turn on">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path class="spk" d="M4 9h4l5-4v14l-5-4H4z"/><path class="wave w1" d="M16 9.5a3.5 3.5 0 0 1 0 5"/><path class="wave w2" d="M18.5 7a7 7 0 0 1 0 10"/><path class="mute" d="M16 9l5 6M21 9l-5 6"/></svg>
+    </button>
+    <button class="icon-btn menu-toggle" type="button" aria-expanded="false" aria-controls="links" aria-label="Open menu">
+      <span></span><span></span>
+    </button>
+  </div>
 </header>
 
-<section class="hero" id="top">
-  <p class="eyebrow">Minecraft mods &middot; plugins &middot; tools</p>
-  <h1>Built by <span class="accent">Waku</span>.</h1>
-  <p class="sub">Minecraft creations, server frameworks and the tools behind them.</p>
-  <div class="cta">
-    <a class="btn primary" href="#work">See the work</a>
-    <a class="btn" href="#contact">Get in touch</a>
+<main id="top">
+
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="hero-copy">
+      <p class="eyebrow"><span class="pulse-dot"></span>Minecraft &middot; AI &middot; software &middot; web</p>
+      <h1 id="hero-title" class="hero-title" aria-label="Made by Waku.">
+        <span class="line" data-split>Made by</span>
+        <span class="line"><span class="chrome-text" data-split>Waku.</span></span>
+      </h1>
+      <p class="sub">Minecraft servers, the plugins behind them, an AI butler, finance research, business software and websites. Built one piece at a time.</p>
+      <div class="cta">
+        <a class="btn primary magnetic" href="#work"><span>See the work</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        <a class="btn ghost magnetic" href="#contact"><span>Get in touch</span></a>
+      </div>
+    </div>
+
+    <div class="hero-stage">
+      <div class="stage-glow" aria-hidden="true"></div>
+      <canvas id="hero3d" tabindex="0" role="img" aria-label="Rotating chrome sculpture. Drag to spin it, click or press Enter to pulse and change its shape."></canvas>
+      <div class="stage-fallback" aria-hidden="true"><div class="orb"></div></div>
+      <p class="stage-hint" aria-hidden="true"><span>drag</span> to spin &middot; <span>click</span> to morph</p>
+    </div>
+
+    <a class="scroll-cue" href="#work" aria-label="Scroll to projects"><span></span></a>
+  </section>
+
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee-track">
+      <div class="marquee-group">
+        <span>Minecraft servers</span><i>&#10022;</i>
+        <span>Java plugins</span><i>&#10022;</i>
+        <span>Java + Bedrock</span><i>&#10022;</i>
+        <span>AI butler</span><i>&#10022;</i>
+        <span>Market research</span><i>&#10022;</i>
+        <span>Accounting &amp; payroll</span><i>&#10022;</i>
+        <span>Next.js sites</span><i>&#10022;</i>
+        <span>Mobile apps</span><i>&#10022;</i>
+      </div>
+    </div>
   </div>
-</section>
 
-<section id="work" class="section">
-  <h2>Our Work</h2>
-  <div class="grid">
+  <section class="stats" aria-label="At a glance">
+    <div class="stat reveal"><strong><span data-count="8">8</span></strong><span>projects</span></div>
+    <div class="stat reveal"><strong><span data-count="3">3</span></strong><span>plugins in the framework</span></div>
+    <div class="stat reveal"><strong><span data-count="2">2</span></strong><span>editions: Java &amp; Bedrock</span></div>
+    <div class="stat reveal"><strong>$<span data-count="0">0</span></strong><span>real money at risk in FIN</span></div>
+  </section>
 
-    
-    <article class="card">
-      <div class="thumb t1"><img src="images/kingdomrp.png" alt="KingdomRP" onerror="this.remove()"><span>KingdomRP</span></div>
-      <div class="body">
-        <span class="tag">Server</span>
-        <h3>KingdomRP Server</h3>
-        <p>A roleplay Minecraft server with custom combat and pets. Join from Java or Bedrock.</p>
+  <section id="work" class="section work" aria-labelledby="work-title">
+    <header class="section-head">
+      <p class="kicker reveal">01 &mdash; Work</p>
+      <h2 id="work-title" class="reveal">Things I&rsquo;ve built</h2>
+      <p class="lede reveal">Eight projects across games, AI, finance, business and the web. Pick one to open the full story.</p>
+    </header>
+
+    <div class="filters reveal" role="toolbar" aria-label="Filter projects">
+      <button type="button" class="chip is-active" data-filter="all" aria-pressed="true">All</button>
+      <button type="button" class="chip" data-filter="minecraft" aria-pressed="false">Minecraft</button>
+      <button type="button" class="chip" data-filter="ai" aria-pressed="false">AI</button>
+      <button type="button" class="chip" data-filter="business" aria-pressed="false">Business</button>
+      <button type="button" class="chip" data-filter="web" aria-pressed="false">Web &amp; apps</button>
+    </div>
+
+    <ul class="grid" role="list">
+      <li class="card-wrap reveal" data-cat="minecraft" style="--i:0">
+        <button class="card" type="button" data-project="kingdomrp-server" style="--h1:168;--h2:250">
+          <span class="thumb"><span class="thumb-art"></span>
+            <svg class="thumb-icon" viewBox="0 0 48 48" aria-hidden="true"><path d="M8 38h32M10 38V18l6 5 8-11 8 11 6-5v20M20 38v-8h8v8"/></svg>
+            <span class="thumb-num">01</span></span>
+          <span class="card-body">
+            <span class="tag">Server</span>
+            <span class="card-title">KingdomRP Server</span>
+            <span class="card-text">A roleplay Minecraft server with custom combat and pets. Join from Java or Bedrock.</span>
+            <span class="card-more">Open project <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
+          </span>
+          <span class="glare" aria-hidden="true"></span>
+        </button>
+      </li>
+      <li class="card-wrap reveal" data-cat="minecraft" style="--i:1">
+        <button class="card" type="button" data-project="kingdomrp-framework" style="--h1:265;--h2:190">
+          <span class="thumb"><span class="thumb-art"></span>
+            <svg class="thumb-icon" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 6l16 9v18l-16 9-16-9V15zM24 24l16-9M24 24v18M24 24L8 15"/></svg>
+            <span class="thumb-num">02</span></span>
+          <span class="card-body">
+            <span class="tag">Framework</span>
+            <span class="card-title">KingdomRP Framework</span>
+            <span class="card-text">The Java plugins behind the server: a core, FightCore for combat and Pets for companions.</span>
+            <span class="card-more">Open project <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
+          </span>
+          <span class="glare" aria-hidden="true"></span>
+        </button>
+      </li>
+      <li class="card-wrap reveal" data-cat="ai" style="--i:2">
+        <button class="card" type="button" data-project="tob" style="--h1:320;--h2:240">
+          <span class="thumb"><span class="thumb-art"></span>
+            <svg class="thumb-icon" viewBox="0 0 48 48" aria-hidden="true"><rect x="10" y="14" width="28" height="22" rx="7"/><path d="M24 14V8M18 24v2M30 24v2M19 31h10"/><circle cx="24" cy="7" r="1.5"/></svg>
+            <span class="thumb-num">03</span></span>
+          <span class="card-body">
+            <span class="tag">AI</span>
+            <span class="card-title">TOB</span>
+            <span class="card-text">My AI butler. It runs the server, writes code with me and helps build everything here.</span>
+            <span class="card-more">Open project <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
+          </span>
+          <span class="glare" aria-hidden="true"></span>
+        </button>
+      </li>
+      <li class="card-wrap reveal" data-cat="ai business" style="--i:3">
+        <button class="card" type="button" data-project="fin" style="--h1:150;--h2:200">
+          <span class="thumb"><span class="thumb-art"></span>
+            <svg class="thumb-icon" viewBox="0 0 48 48" aria-hidden="true"><path d="M6 36l10-12 8 7 10-14 8 6M6 42h36"/><circle cx="34" cy="17" r="2"/></svg>
+            <span class="thumb-num">04</span></span>
+          <span class="card-body">
+            <span class="tag">Finance</span>
+            <span class="card-title">FIN</span>
+            <span class="card-text">TOB&rsquo;s markets department: live monitoring, honest backtests, ML research and paper trading behind a risk guard. Simulated money only.</span>
+            <span class="card-more">Open project <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
+          </span>
+          <span class="glare" aria-hidden="true"></span>
+        </button>
+      </li>
+      <li class="card-wrap reveal" data-cat="business" style="--i:4">
+        <button class="card" type="button" data-project="edgarbooks" style="--h1:40;--h2:330">
+          <span class="thumb"><span class="thumb-art"></span>
+            <svg class="thumb-icon" viewBox="0 0 48 48" aria-hidden="true"><path d="M12 6h18l8 8v28H12zM30 6v8h8M18 22h14M18 28h14M18 34h8"/></svg>
+            <span class="thumb-num">05</span></span>
+          <span class="card-body">
+            <span class="tag">Business</span>
+            <span class="card-title">EdgarBooks</span>
+            <span class="card-text">Accounting, invoicing, online payments and payroll for small service companies, with a client portal and Arizona payroll rules built in.</span>
+            <span class="card-more">Open project <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
+          </span>
+          <span class="glare" aria-hidden="true"></span>
+        </button>
+      </li>
+      <li class="card-wrap reveal" data-cat="business web" style="--i:5">
+        <button class="card" type="button" data-project="tqm" style="--h1:200;--h2:140">
+          <span class="thumb"><span class="thumb-art"></span>
+            <svg class="thumb-icon" viewBox="0 0 48 48" aria-hidden="true"><rect x="6" y="9" width="36" height="30" rx="4"/><path d="M6 17h36M11 13h.01M15 13h.01M14 26l5 5 10-10"/></svg>
+            <span class="thumb-num">06</span></span>
+          <span class="card-body">
+            <span class="tag">Web</span>
+            <span class="card-title">TQM Website</span>
+            <span class="card-text">The official site for Total Quality Management, a family-owned cleaning company in Mesa, Arizona. Next.js, fast and static, with quote requests feeding EdgarBooks.</span>
+            <span class="card-more">Open project <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
+          </span>
+          <span class="glare" aria-hidden="true"></span>
+        </button>
+      </li>
+      <li class="card-wrap reveal" data-cat="web" style="--i:6">
+        <button class="card" type="button" data-project="halo" style="--h1:290;--h2:350">
+          <span class="thumb"><span class="thumb-art"></span>
+            <svg class="thumb-icon" viewBox="0 0 48 48" aria-hidden="true"><ellipse cx="24" cy="10" rx="11" ry="3.5"/><path d="M24 42s-13-7.5-13-17a7 7 0 0 1 13-3.6A7 7 0 0 1 37 25c0 9.5-13 17-13 17z"/></svg>
+            <span class="thumb-num">07</span></span>
+          <span class="card-body">
+            <span class="tag">App</span>
+            <span class="card-title">Halo</span>
+            <span class="card-text">A gym dating app: check in at your gym, swipe on people there right now, and find your match on the floor.</span>
+            <span class="card-more">Open project <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
+          </span>
+          <span class="glare" aria-hidden="true"></span>
+        </button>
+      </li>
+      <li class="card-wrap reveal" data-cat="web ai" style="--i:7">
+        <button class="card" type="button" data-project="tob-company" style="--h1:230;--h2:175">
+          <span class="thumb"><span class="thumb-art"></span>
+            <svg class="thumb-icon" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="17"/><path d="M7 24h34M24 7c5 5 7 11 7 17s-2 12-7 17c-5-5-7-11-7-17s2-12 7-17z"/></svg>
+            <span class="thumb-num">08</span></span>
+          <span class="card-body">
+            <span class="tag">Web</span>
+            <span class="card-title">The TOB Company</span>
+            <span class="card-text">The home site for TOB and the tools built around it.</span>
+            <span class="card-more">Open project <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
+          </span>
+          <span class="glare" aria-hidden="true"></span>
+        </button>
+      </li>
+    </ul>
+  </section>
+
+  <section id="about" class="section about" aria-labelledby="about-title">
+    <header class="section-head">
+      <p class="kicker reveal">02 &mdash; About</p>
+      <h2 id="about-title" class="reveal">One builder, a lot of tabs open</h2>
+    </header>
+    <div class="about-grid">
+      <p class="about-statement" data-words>madebywaku is where my mods, plugins, apps and experiments live. It started with a Minecraft server and kept growing: an AI butler to help run it, a markets lab, software for a family business, and the websites that tie it together.</p>
+      <div class="about-side">
+        <ul class="pillars" role="list">
+          <li class="pillar reveal" style="--i:0">
+            <span class="pillar-n">A</span>
+            <div><h3>Games first</h3><p>KingdomRP is the root of it all: a roleplay server and the Java framework that powers its combat and pets.</p></div>
+          </li>
+          <li class="pillar reveal" style="--i:1">
+            <span class="pillar-n">B</span>
+            <div><h3>Build with an AI partner</h3><p>TOB works alongside me: it helps run the server, writes code with me and has its own markets department, FIN.</p></div>
+          </li>
+          <li class="pillar reveal" style="--i:2">
+            <span class="pillar-n">C</span>
+            <div><h3>Real tools for real work</h3><p>EdgarBooks and the TQM site serve an actual small business, from the first quote request to payroll.</p></div>
+          </li>
+        </ul>
       </div>
-    </article>
+    </div>
+  </section>
 
-    <article class="card">
-      <div class="thumb t2"><img src="images/framework.png" alt="Framework" onerror="this.remove()"><span>Framework</span></div>
-      <div class="body">
-        <span class="tag">Framework</span>
-        <h3>KingdomRP Framework</h3>
-        <p>The Java plugins behind the server: a core, FightCore for combat and Pets for companions.</p>
+  <section id="contact" class="section contact" aria-labelledby="contact-title">
+    <div class="contact-card reveal">
+      <div class="contact-glow" aria-hidden="true"></div>
+      <p class="kicker">03 &mdash; Contact</p>
+      <h2 id="contact-title">Let&rsquo;s build something.</h2>
+      <p class="lede">Questions about a project, a server invite, or an idea to work on together. Pick a channel.</p>
+      <p class="placeholder-note"><span class="ph">Placeholder</span> Links marked like this are not real yet and will be replaced.</p>
+      <ul class="contact-links" role="list">
+        <li><a class="contact-link magnetic" href="https://github.com/yuwakuuu" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 19c-4 1.5-4-2-6-2.5m12 5v-3.5a3 3 0 0 0-.9-2.4c3-.3 6.1-1.5 6.1-6.6a5.2 5.2 0 0 0-1.4-3.6 4.8 4.8 0 0 0-.1-3.6s-1.1-.3-3.6 1.4a12.4 12.4 0 0 0-6.4 0C6.3 1.5 5.2 1.8 5.2 1.8a4.8 4.8 0 0 0-.1 3.6 5.2 5.2 0 0 0-1.4 3.6c0 5.1 3.1 6.3 6.1 6.6a3 3 0 0 0-.9 2.4V22"/></svg>
+          <span><strong>GitHub</strong><small>github.com/yuwakuuu</small></span></a></li>
+        <li><a class="contact-link magnetic" href="#contact" data-placeholder>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 7.5c2.3-.7 4.7-.7 7 0M8 16.5c2.7.9 5.3.9 8 0M15.5 7.5c1.6 2.3 2.5 5 2.5 8.5 1.5-.5 2.8-1.2 4-2.2 0-4-1.3-7.6-3.5-10.3a14 14 0 0 0-3-.9M8.5 7.5C6.9 9.8 6 12.5 6 16c-1.5-.5-2.8-1.2-4-2.2 0-4 1.3-7.6 3.5-10.3a14 14 0 0 1 3-.9"/><circle cx="9.5" cy="12.5" r="1"/><circle cx="14.5" cy="12.5" r="1"/></svg>
+          <span><strong>Discord <em class="ph">Placeholder</em></strong><small>discord.gg/your-invite</small></span></a></li>
+        <li><button class="contact-link magnetic" type="button" data-copy="hello@example.com" data-placeholder>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3.5 7l8.5 6 8.5-6"/></svg>
+          <span><strong>Email <em class="ph">Placeholder</em></strong><small>hello@example.com &middot; click to copy</small></span></button></li>
+        <li><a class="contact-link magnetic" href="#contact" data-placeholder>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/></svg>
+          <span><strong>Server IP <em class="ph">Placeholder</em></strong><small>play.your-server-ip.net</small></span></a></li>
+      </ul>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <p>&copy; <span id="year">2026</span> madebywaku</p>
+  <a class="to-top magnetic" href="#top">Back to top &uarr;</a>
+</footer>
+
+<dialog class="modal" id="modal" aria-labelledby="modal-title">
+  <div class="modal-inner">
+    <div class="modal-hero">
+      <span class="thumb-art"></span>
+      <svg class="thumb-icon modal-icon" viewBox="0 0 48 48" aria-hidden="true"></svg>
+      <span class="modal-num"></span>
+      <button class="icon-btn modal-close" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <span class="tag modal-tag"></span>
+      <h2 id="modal-title" class="modal-title"></h2>
+      <p class="modal-summary"></p>
+      <div class="modal-cols">
+        <div>
+          <h3>What it does</h3>
+          <ul class="modal-features" role="list"></ul>
+        </div>
+        <div>
+          <h3>Details</h3>
+          <dl class="modal-facts"></dl>
+          <h3 class="modal-links-title">Connected projects</h3>
+          <div class="modal-links"></div>
+        </div>
       </div>
-    </article>
-
-    <article class="card">
-      <div class="thumb t3"><img src="images/tob.png" alt="TOB" onerror="this.remove()"><span>TOB</span></div>
-      <div class="body">
-        <span class="tag">AI</span>
-        <h3>TOB</h3>
-        <p>My AI butler. It runs the server, writes code with me and helps build everything here.</p>
-      </div>
-    </article>
-
-    <article class="card">
-      <div class="thumb t1"><img src="images/fin.png" alt="FIN" onerror="this.remove()"><span>FIN</span></div>
-      <div class="body">
-        <span class="tag">Finance</span>
-        <h3>FIN</h3>
-        <p>TOB's markets department: live monitoring, honest backtests, ML research and paper trading behind a risk guard. Simulated money only.</p>
-      </div>
-    </article>
-
-    <article class="card">
-      <div class="thumb t2"><img src="images/edgarbooks.png" alt="EdgarBooks" onerror="this.remove()"><span>EdgarBooks</span></div>
-      <div class="body">
-        <span class="tag">Business</span>
-        <h3>EdgarBooks</h3>
-        <p>Accounting, invoicing, online payments and payroll for small service companies, with a client portal and Arizona payroll rules built in.</p>
-      </div>
-    </article>
-
-    <article class="card">
-      <div class="thumb t3"><img src="images/tqm.png" alt="TQM" onerror="this.remove()"><span>TQM</span></div>
-      <div class="body">
-        <span class="tag">Web</span>
-        <h3>TQM Website</h3>
-        <p>The official site for Total Quality Management, a family-owned cleaning company in Mesa, Arizona. Next.js, fast and static, with quote requests feeding EdgarBooks.</p>
-      </div>
-    </article>
-
-    <article class="card">
-      <div class="thumb t1"><img src="images/halo.png" alt="Halo" onerror="this.remove()"><span>Halo</span></div>
-      <div class="body">
-        <span class="tag">App</span>
-        <h3>Halo</h3>
-        <p>A gym dating app: check in at your gym, swipe on people there right now, and find your match on the floor.</p>
-      </div>
-    </article>
-
-    <article class="card">
-      <div class="thumb t2"><img src="images/thetobcompany.png" alt="The TOB Company" onerror="this.remove()"><span>The TOB Company</span></div>
-      <div class="body">
-        <span class="tag">Web</span>
-        <h3>The TOB Company</h3>
-        <p>The home site for TOB and the tools built around it.</p>
-      </div>
-    </article>
-
+    </div>
+    <div class="modal-nav">
+      <button class="btn ghost small modal-prev" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg><span>Previous</span></button>
+      <span class="modal-count" aria-live="polite"></span>
+      <button class="btn ghost small modal-next" type="button"><span>Next</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+    </div>
   </div>
-</section>
+</dialog>
 
-<section id="about" class="section alt">
-  <h2>About</h2>
-  <p class="narrow">madebywaku is where my mods, plugins, apps and experiments live: Minecraft servers, an AI butler, finance research, business software and websites.</p>
-</section>
-
-<section id="contact" class="section">
-  <h2>Contact</h2>
-  <p class="narrow">Discord, GitHub and email links coming soon.</p>
-</section>
-
-<footer>&copy; 2026 madebywaku</footer>
+<div class="toast" role="status" aria-live="polite"></div>
 
 </body>
 </html>
-
-
