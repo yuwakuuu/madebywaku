@@ -1,4 +1,5 @@
-// Rich detail for each project card. Card markup lives in index.html; ids match data-project.
+// Case-study detail for each project card. Card markup lives in index.html; ids match data-project.
+// summary = what it is, features = what I built, tech = tech and skills used.
 export const projects = [
   {
     id: 'kingdomrp-server',
@@ -14,6 +15,7 @@ export const projects = [
     ],
     facts: { Type: 'Minecraft server', Editions: 'Java + Bedrock', 'Runs on': 'KingdomRP Framework' },
     links: ['kingdomrp-framework', 'tob'],
+    tech: ['Minecraft server', 'Java + Bedrock cross-play', 'Custom Java plugins', 'Server administration'],
   },
   {
     id: 'kingdomrp-framework',
@@ -28,6 +30,7 @@ export const projects = [
     ],
     facts: { Type: 'Server plugins', Language: 'Java', Modules: 'Core, FightCore, Pets' },
     links: ['kingdomrp-server', 'tob'],
+    tech: ['Java', 'Minecraft plugin API', 'Modular plugin design'],
   },
   {
     id: 'tob',
@@ -42,6 +45,7 @@ export const projects = [
     ],
     facts: { Type: 'AI assistant', Role: 'Butler, operator, co-builder', Departments: 'FIN (markets)' },
     links: ['fin', 'tob-company', 'kingdomrp-server'],
+    tech: ['AI tools', 'Automation', 'Server operations', 'Pair programming'],
   },
   {
     id: 'fin',
@@ -57,6 +61,7 @@ export const projects = [
     ],
     facts: { Type: 'Research lab', 'Part of': 'TOB', Money: 'Simulated only' },
     links: ['tob'],
+    tech: ['Machine learning', 'Backtesting', 'Live market data', 'Paper trading', 'Risk controls'],
   },
   {
     id: 'edgarbooks',
@@ -72,6 +77,7 @@ export const projects = [
     ],
     facts: { Type: 'Business software', For: 'Small service companies', Region: 'Arizona payroll rules' },
     links: ['tqm'],
+    tech: ['Web application', 'Online payments', 'Payroll rules', 'Client portal'],
   },
   {
     id: 'tqm',
@@ -85,6 +91,7 @@ export const projects = [
     ],
     facts: { Type: 'Business website', Client: 'Total Quality Management', Location: 'Mesa, Arizona', Stack: 'Next.js (static)' },
     links: ['edgarbooks'],
+    tech: ['Next.js', 'Static site', 'Responsive design', 'Quote form'],
   },
   {
     id: 'tob-company',
@@ -98,5 +105,6 @@ export const projects = [
     ],
     facts: { Type: 'Website', About: 'TOB and its tools' },
     links: ['tob', 'fin'],
+    tech: ['Web design', 'Responsive site'],
   },
 ];

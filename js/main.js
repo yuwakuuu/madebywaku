@@ -465,7 +465,7 @@ function setupPress() {
   });
 }
 
-/* ------------------------------------------------------------------ reveals, counters, about words */
+/* ------------------------------------------------------------------ reveals, about words */
 function setupReveal() {
   const els = $$('.reveal');
   if (reduced || !('IntersectionObserver' in window)) { els.forEach((el) => el.classList.add('in')); return; }
@@ -476,31 +476,6 @@ function setupReveal() {
       io.unobserve(en.target);
     }
   }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
-  els.forEach((el) => io.observe(el));
-}
-
-function setupCounters() {
-  const els = $$('[data-count]');
-  if (reduced) return; // markup already holds the final values
-  const fmt = (n) => Math.round(n).toLocaleString('en-US');
-  const run = (el) => {
-    const to = Number(el.dataset.count);
-    const from = Number(el.dataset.from ?? 0);
-    if (reduced) { el.textContent = fmt(to); return; }
-    const dur = 1600, t0 = performance.now();
-    const step = (now) => {
-      const p = Math.min((now - t0) / dur, 1);
-      const e = p === 1 ? 1 : 1 - Math.pow(2, -10 * p);
-      el.textContent = fmt(from + (to - from) * e);
-      if (p < 1) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
-  };
-  // the "$0 at risk" counter counts *down* for effect
-  els.forEach((el) => { if (el.dataset.count === '0') el.dataset.from = '10000'; el.textContent = fmt(el.dataset.from ?? 0); });
-  const io = new IntersectionObserver((entries) => {
-    for (const en of entries) if (en.isIntersecting) { run(en.target); io.unobserve(en.target); }
-  }, { threshold: 0.6 });
   els.forEach((el) => io.observe(el));
 }
 
@@ -580,7 +555,7 @@ function setupScroll() {
       navLinks.forEach((a) => a.classList.toggle('is-active', a.getAttribute('href') === `#${en.target.id}`));
     }
   }, { rootMargin: '-45% 0px -50% 0px' });
-  ['work', 'about', 'contact'].forEach((id) => io.observe(document.getElementById(id)));
+  ['services', 'work', 'about', 'process', 'contact'].forEach((id) => io.observe(document.getElementById(id)));
   const hero = $('.hero');
   new IntersectionObserver(([en]) => { if (en.isIntersecting) navLinks.forEach((a) => a.classList.remove('is-active')); }, { rootMargin: '-45% 0px -50% 0px' }).observe(hero);
 }
@@ -660,6 +635,7 @@ function setupModal() {
     $('.modal-title', dlg).textContent = p.title;
     $('.modal-summary', dlg).textContent = p.summary;
     $('.modal-features', dlg).innerHTML = p.features.map((f, i) => `<li style="--i:${i}">${esc(f)}</li>`).join('');
+    $('.modal-tech', dlg).innerHTML = p.tech.map((t) => `<li>${esc(t)}</li>`).join('');
     $('.modal-facts', dlg).innerHTML = Object.entries(p.facts).map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('');
     const linksBox = $('.modal-links', dlg);
     $('.modal-links-title', dlg).hidden = !p.links.length;
@@ -742,14 +718,10 @@ function setupContact() {
     const text = btn.dataset.copy;
     try {
       await navigator.clipboard.writeText(text);
-      toast(`Copied ${text} (placeholder address)`);
+      toast(`Copied ${text}`);
     } catch {
-      toast(`${text} is a placeholder address`);
+      toast(text);
     }
-  }));
-  $$('a[data-placeholder]').forEach((a) => a.addEventListener('click', (e) => {
-    e.preventDefault();
-    toast('Placeholder link: coming soon');
   }));
 }
 
@@ -807,7 +779,7 @@ function setupOffscreen() {
   const io = new IntersectionObserver((entries) => {
     for (const en of entries) en.target.classList.toggle('is-off', !en.isIntersecting);
   });
-  $$('.hero, .marquee, .loop-stage, .contact-card, .grid').forEach((el) => io.observe(el));
+  $$('.hero, .marquee, .svc-grid, .loop-stage, .contact-card, .grid').forEach((el) => io.observe(el));
 }
 
 /* ------------------------------------------------------------------ boot */
@@ -822,7 +794,6 @@ setupMagnetic();
 setupTilt();
 setupPress();
 setupReveal();
-setupCounters();
 setupAboutWords();
 setupMarquee();
 setupScroll();
