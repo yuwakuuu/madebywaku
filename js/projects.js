@@ -2,6 +2,7 @@
 // summary = what it is, features = what I built, tech = tech and skills used.
 // items = sub-projects listed in the modal under "Inside"; omit when there are none.
 // site = public display site; null keeps its Visit site buttons hidden.
+// demo = shows the Talk to TOB button (the scripted demo in js/tob-demo.js) in the modal.
 
 // Public display sites, also listed under Live sites in the contact section.
 // TOB is served from my PC through Tailscale Funnel, so it is only up while that PC is on.
@@ -31,6 +32,7 @@ export const projects = [
     facts: { Type: 'AI assistant', Role: 'Butler, operator, co-builder', Departments: 'FIN (markets)' },
     links: ['fin', 'krp', 'tmp'],
     site: SITES.tob,
+    demo: true,
     tech: ['AI tools', 'Automation', 'Server operations', 'Pair programming', 'Web design'],
   },
   {

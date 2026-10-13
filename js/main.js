@@ -1,4 +1,5 @@
-import { projects, SITES } from './projects.js?v=6';
+import { projects, SITES } from './projects.js?v=7';
+import { setupTobDemo } from './tob-demo.js?v=7';
 
 window.__mbw = true;
 
@@ -929,6 +930,7 @@ function setupModal() {
       visit.href = p.site;
       visit.setAttribute('aria-label', `Visit the ${p.title} site (opens in a new tab)`);
     }
+    $('.modal-demo', dlg).hidden = !p.demo;
     const items = p.items || [];
     $('.modal-items-title', dlg).hidden = !items.length;
     $('.modal-items', dlg).innerHTML = items.map((it, i) => `<li style="--i:${i}"><strong>${esc(it.name)}</strong><span>${esc(it.text)}</span></li>`).join('');
@@ -1007,6 +1009,17 @@ function setupModal() {
     if (e.target.closest('input, textarea')) return;
     if (e.key === 'ArrowRight') step(1);
     else if (e.key === 'ArrowLeft') step(-1);
+  });
+}
+
+/* ------------------------------------------------------------------ TOB demo */
+// The scripted Talk to TOB dialog (js/tob-demo.js), opened from the TOB card and its case study.
+// It can open on top of the project modal, so background effects stay paused while either is open.
+function setupDemo() {
+  setupTobDemo({
+    reduced,
+    onOpen: () => { sound.open(); fx.pause(true); },
+    onClose: () => { sound.close(); fx.pause($('#modal').open); },
   });
 }
 
@@ -1345,5 +1358,6 @@ setupMenu();
 setupFilters();
 setupSites();
 setupModal();
+setupDemo();
 setupContact();
 setupFeatured();
