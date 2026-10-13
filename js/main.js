@@ -1,4 +1,4 @@
-import { projects, SITES } from './projects.js';
+import { projects, SITES } from './projects.js?v=5';
 
 window.__mbw = true;
 
@@ -1135,8 +1135,8 @@ function setupFeatured() {
     controls.hidden = true;
     // 101 / 150: the owner turned off embedding
     status.textContent = e.data === 101 || e.data === 150
-      ? 'This video can’t be played here right now.'
-      : 'The video didn’t load. Try again.';
+      ? 'This video canâ€™t be played here right now.'
+      : 'The video didnâ€™t load. Try again.';
   }
 
   function start() {
@@ -1183,7 +1183,7 @@ function setupFeatured() {
       });
     }).catch(() => {
       frame.classList.remove('is-loading');
-      status.textContent = 'The video didn’t load. Check your connection and try again.';
+      status.textContent = 'The video didnâ€™t load. Check your connection and try again.';
     });
   }
 
