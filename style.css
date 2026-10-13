@@ -1113,12 +1113,3 @@ html:has(.modal[open]) { overflow: hidden; }
   .marquee { overflow-x: auto; }
   .tobd-mic[aria-pressed="true"], .card-demo-dot { animation: none !important; }
 }
-
-/* Swap sides on desktop: MBW monogram left in the hero, infinity loop right in the process section. */
-@media (min-width: 961px) {
-  .hero { grid-template-columns: 1fr 1.05fr; }
-  .hero-stage { order: -1; }
-  .loop-grid { grid-template-columns: 1fr 1.1fr; }
-  .loop-stage { order: 2; }
-}
-
