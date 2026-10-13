@@ -7,10 +7,10 @@
 // TOB is served from my PC through Tailscale Funnel, so it is only up while that PC is on.
 export const SITES = {
   tob: 'https://yuwakuonline.tail28063a.ts.net:8443/',
-  // TODO(fin-site): the FIN display site (C:\Dev\fin-website) is not hosted publicly yet. Paste its URL here.
-  fin: null,
-  // TODO(gar-site): GAR has no public display site yet. Paste its URL here.
-  gar: null,
+  // FIN and GAR links are temporary (a Cloudflare quick tunnel and a Claude artifact).
+  // Swap them for permanent Cloudflare URLs once both sites are hosted.
+  fin: 'https://revolution-owners-bell-experiencing.trycloudflare.com/',
+  gar: 'https://claude.ai/code/artifact/a493d185-0012-4b6b-9224-e656b9efe5a1#no_universal_links',
 };
 
 export const projects = [
