@@ -546,6 +546,12 @@ h2 { font: 700 clamp(2.2rem, 5.2vw, 4rem)/1 var(--display); letter-spacing: -.03
 /* ============ cards ============ */
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 22px; }
 .card-wrap.is-hidden { display: none; }
+/* five cards: centre the last two under the first three while nothing is filtered out */
+@media (min-width: 1180px) {
+  .grid:not(:has(.is-hidden)) { grid-template-columns: repeat(6, 1fr); }
+  .grid:not(:has(.is-hidden)) > .card-wrap { grid-column: span 2; }
+  .grid:not(:has(.is-hidden)) > .card-wrap:nth-child(4) { grid-column: 2 / span 2; }
+}
 .card {
   --rx: 0deg; --ry: 0deg; --gx: 50%; --gy: 50%; --go: 0;
   position: relative; width: 100%; height: 100%; text-align: left;
@@ -754,6 +760,15 @@ h2 { font: 700 clamp(2.2rem, 5.2vw, 4rem)/1 var(--display); letter-spacing: -.03
 .modal-summary { color: #c8ccd8; font-size: 1.08rem; max-width: 680px; }
 .modal-visit { margin-top: 20px; }
 .modal-visit[hidden], .live-sites[hidden] { display: none; }
+.modal-items-title[hidden] { display: none; }
+.modal-items { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); gap: 10px; }
+.modal-items li {
+  display: grid; align-content: start; gap: 6px; padding: 14px 16px; border-radius: 14px;
+  background: rgba(255,255,255,.03); border: 1px solid hsl(var(--h1) 70% 60% / .22);
+  animation: rise .6s var(--ease) both; animation-delay: calc(var(--i) * 60ms + 120ms);
+}
+.modal-items strong { font-size: .98rem; color: hsl(var(--h1) 85% 80%); }
+.modal-items span { color: #c8ccd8; font-size: .9rem; }
 .modal-cols { display: grid; grid-template-columns: 1.3fr 1fr; gap: 32px; margin: 28px 0 16px; }
 .modal-label, .modal-cols h3 { font: 500 .75rem/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--dim); margin-bottom: 14px; }
 .modal-features { display: grid; gap: 10px; }

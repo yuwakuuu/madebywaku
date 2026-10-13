@@ -816,7 +816,7 @@ function setupSites() {
     $(`.card[data-project="${p.id}"]`).after(a);
   });
   const box = $('.live-sites');
-  const live = [['FIN', SITES.fin], ['EdgarBooks', SITES.edgarbooks], ['The TOB Company', SITES.tob]].filter(([, url]) => url);
+  const live = [['TOB', SITES.tob], ['FIN', SITES.fin], ['GAR', SITES.gar]].filter(([, url]) => url);
   live.forEach(([name, url]) => {
     const li = document.createElement('li');
     li.append(siteLink(url, name, 'btn ghost small live-site'));
@@ -857,6 +857,9 @@ function setupModal() {
       visit.href = p.site;
       visit.setAttribute('aria-label', `Visit the ${p.title} site (opens in a new tab)`);
     }
+    const items = p.items || [];
+    $('.modal-items-title', dlg).hidden = !items.length;
+    $('.modal-items', dlg).innerHTML = items.map((it, i) => `<li style="--i:${i}"><strong>${esc(it.name)}</strong><span>${esc(it.text)}</span></li>`).join('');
     $('.modal-features', dlg).innerHTML = p.features.map((f, i) => `<li style="--i:${i}">${esc(f)}</li>`).join('');
     $('.modal-tech', dlg).innerHTML = p.tech.map((t) => `<li>${esc(t)}</li>`).join('');
     $('.modal-facts', dlg).innerHTML = Object.entries(p.facts).map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('');
