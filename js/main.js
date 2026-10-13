@@ -1070,13 +1070,13 @@ function mountStage(canvas, load) {
 }
 
 function setupHero() {
-  mountStage($('#hero3d'), () => import('./hero3d.js').then((m) => m.initHero));
+  mountStage($('#hero3d'), () => import('./infinity3d.js').then((m) => m.initInfinity));
 }
 
 // the infinity loop (and its WebGL context) only spins up once its section is near the viewport
 function setupLoop() {
   const canvas = $('#loop3d');
-  const go = () => mountStage(canvas, () => import('./infinity3d.js').then((m) => m.initInfinity));
+  const go = () => mountStage(canvas, () => import('./hero3d.js').then((m) => m.initHero));
   if (!('IntersectionObserver' in window)) { go(); return; }
   const io = new IntersectionObserver(([en]) => {
     if (!en.isIntersecting) return;

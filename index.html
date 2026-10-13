@@ -126,8 +126,11 @@ if(!seen&&!location.hash&&!matchMedia('(prefers-reduced-motion: reduce)').matche
 
     <div class="hero-stage" data-stage>
       <div class="stage-glow" aria-hidden="true"></div>
-      <canvas id="hero3d" class="chrome-canvas" tabindex="0" role="img" aria-label="Chrome MBW monogram. Drag or use the arrow keys to spin it, click or press Enter to pulse it."></canvas>
-      <div class="stage-fallback" aria-hidden="true"><div class="orb"><span class="orb-mono">MBW</span></div></div>
+      <canvas id="hero3d" class="chrome-canvas" tabindex="0" role="img" aria-label="Chrome infinity loop. Drag or use the arrow keys to spin it, click or press Enter to pulse it."></canvas>
+      <div class="stage-fallback" aria-hidden="true"><svg class="loop-fallback" viewBox="0 0 400 200" aria-hidden="true">
+          <defs><linearGradient id="loop-chrome" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset=".38" stop-color="#c9ced9"/><stop offset=".52" stop-color="#6b7385"/><stop offset=".64" stop-color="#e9ecf3"/><stop offset="1" stop-color="#9aa2b4"/></linearGradient></defs>
+          <path d="M370 100L368.1 122L362.5 142.3L353.9 159.7L343 173.4L330.7 182.9L317.8 188.3L304.8 190.2L292.2 188.9L280.1 185L268.9 179.1L258.4 171.7L248.6 163.1L239.4 153.6L230.9 143.5L222.8 133L215 122.1L207.4 111.1L200 100L192.6 88.9L185 77.9L177.2 67L169.1 56.5L160.6 46.4L151.4 36.9L141.6 28.3L131.1 20.9L119.9 15L107.8 11.1L95.2 9.8L82.2 11.7L69.3 17.1L57 26.6L46.1 40.3L37.5 57.7L31.9 78L30 100L31.9 122L37.5 142.3L46.1 159.7L57 173.4L69.3 182.9L82.2 188.3L95.2 190.2L107.8 188.9L119.9 185L131.1 179.1L141.6 171.7L151.4 163.1L160.6 153.6L169.1 143.5L177.2 133L185 122.1L192.6 111.1L200 100L207.4 88.9L215 77.9L222.8 67L230.9 56.5L239.4 46.4L248.6 36.9L258.4 28.3L268.9 20.9L280.1 15L292.2 11.1L304.8 9.8L317.8 11.7L330.7 17.1L343 26.6L353.9 40.3L362.5 57.7L368.1 78Z"/>
+        </svg></div>
       <p class="stage-hint" aria-hidden="true"><span>drag</span> to spin &middot; <span class="v-click">click</span><span class="v-tap">tap</span> to pulse</p>
     </div>
 
@@ -441,11 +444,8 @@ if(!seen&&!location.hash&&!matchMedia('(prefers-reduced-motion: reduce)').matche
     <div class="loop-grid">
       <div class="loop-stage" data-stage>
         <div class="stage-glow" aria-hidden="true"></div>
-        <svg class="loop-fallback" viewBox="0 0 400 200" aria-hidden="true">
-          <defs><linearGradient id="loop-chrome" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset=".38" stop-color="#c9ced9"/><stop offset=".52" stop-color="#6b7385"/><stop offset=".64" stop-color="#e9ecf3"/><stop offset="1" stop-color="#9aa2b4"/></linearGradient></defs>
-          <path d="M370 100L368.1 122L362.5 142.3L353.9 159.7L343 173.4L330.7 182.9L317.8 188.3L304.8 190.2L292.2 188.9L280.1 185L268.9 179.1L258.4 171.7L248.6 163.1L239.4 153.6L230.9 143.5L222.8 133L215 122.1L207.4 111.1L200 100L192.6 88.9L185 77.9L177.2 67L169.1 56.5L160.6 46.4L151.4 36.9L141.6 28.3L131.1 20.9L119.9 15L107.8 11.1L95.2 9.8L82.2 11.7L69.3 17.1L57 26.6L46.1 40.3L37.5 57.7L31.9 78L30 100L31.9 122L37.5 142.3L46.1 159.7L57 173.4L69.3 182.9L82.2 188.3L95.2 190.2L107.8 188.9L119.9 185L131.1 179.1L141.6 171.7L151.4 163.1L160.6 153.6L169.1 143.5L177.2 133L185 122.1L192.6 111.1L200 100L207.4 88.9L215 77.9L222.8 67L230.9 56.5L239.4 46.4L248.6 36.9L258.4 28.3L268.9 20.9L280.1 15L292.2 11.1L304.8 9.8L317.8 11.7L330.7 17.1L343 26.6L353.9 40.3L362.5 57.7L368.1 78Z"/>
-        </svg>
-        <canvas id="loop3d" class="chrome-canvas" tabindex="0" role="img" aria-label="Chrome infinity loop. Drag or use the arrow keys to spin it, click or press Enter to pulse it."></canvas>
+        <div class="stage-fallback" aria-hidden="true"><div class="orb"><span class="orb-mono">MBW</span></div></div>
+        <canvas id="loop3d" class="chrome-canvas" tabindex="0" role="img" aria-label="Chrome MBW monogram. Drag or use the arrow keys to spin it, click or press Enter to pulse it."></canvas>
         <p class="stage-hint" aria-hidden="true"><span>drag</span> to spin &middot; <span class="v-click">click</span><span class="v-tap">tap</span> to pulse</p>
       </div>
       <div class="loop-copy">
