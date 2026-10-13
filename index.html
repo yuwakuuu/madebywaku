@@ -391,11 +391,34 @@ if(!seen&&!location.hash&&!matchMedia('(prefers-reduced-motion: reduce)').matche
     </header>
     <div class="feat-grid">
       <div class="feat-media reveal">
-        <div class="feat-frame" data-yt="N9MPn6C5p5c" data-yt-title="HEAVEN GATES by B4CKWOOD">
-          <a class="feat-poster" href="https://www.youtube.com/watch?v=N9MPn6C5p5c" target="_blank" rel="noopener" data-cursor="Play" aria-label="Play HEAVEN GATES by B4CKWOOD">
-            <img src="https://i.ytimg.com/vi/N9MPn6C5p5c/hqdefault.jpg" alt="" width="480" height="360" loading="lazy" decoding="async">
-            <span class="feat-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z"/></svg></span>
-          </a>
+        <div class="feat-frame" data-yt="N9MPn6C5p5c" data-yt-title="HEAVEN GATES by B4CKWOOD, mixed by Waku">
+          <div class="feat-stage" inert aria-hidden="true"><div class="feat-player"></div></div>
+          <div class="feat-shield" data-cursor="Pause" aria-hidden="true"></div>
+          <button class="feat-poster" type="button" data-cursor="Play" aria-label="Play HEAVEN GATES, mixed by Waku">
+            <span class="feat-poster-art" aria-hidden="true"><span></span><span></span><span></span></span>
+            <span class="feat-play" aria-hidden="true">
+              <svg class="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z"/></svg>
+              <svg class="i-pause" viewBox="0 0 24 24"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>
+            </span>
+            <span class="feat-poster-text" aria-hidden="true">
+              <span class="feat-poster-title">HEAVEN GATES</span>
+              <span class="feat-poster-cap">Mixed by Waku</span>
+            </span>
+            <span class="feat-status" role="status"></span>
+          </button>
+          <div class="feat-controls" role="group" aria-label="Video controls" hidden>
+            <button class="fc-btn fc-play" type="button" aria-label="Pause">
+              <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
+              <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>
+            </button>
+            <span class="fc-time" aria-hidden="true"><span class="fc-cur">0:00</span> / <span class="fc-dur">0:00</span></span>
+            <input class="fc-seek" type="range" min="0" max="1000" step="1" value="0" aria-label="Seek" aria-valuetext="0:00">
+            <button class="fc-btn fc-mute" type="button" aria-label="Mute" aria-pressed="false">
+              <svg class="i-vol" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path class="w" d="M15.5 8.5a5 5 0 0 1 0 7M18 6a8.5 8.5 0 0 1 0 12"/></svg>
+              <svg class="i-mute" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path class="w" d="M16 9.5l5 5M21 9.5l-5 5"/></svg>
+            </button>
+            <input class="fc-vol" type="range" min="0" max="100" step="1" value="100" aria-label="Volume">
+          </div>
         </div>
       </div>
       <div class="feat-copy reveal" style="--i:1">
@@ -410,7 +433,6 @@ if(!seen&&!location.hash&&!matchMedia('(prefers-reduced-motion: reduce)').matche
         <div class="cta">
           <a class="btn primary magnetic" href="#contact" data-sound="confirm"><span>Get your track mixed</span>
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-          <a class="btn ghost magnetic" href="https://www.youtube.com/watch?v=N9MPn6C5p5c" target="_blank" rel="noopener"><span>Watch on YouTube</span></a>
         </div>
       </div>
     </div>

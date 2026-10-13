@@ -1006,27 +1006,249 @@ function setupOffscreen() {
 }
 
 /* ------------------------------------------------------------------ featured video */
-// A lightweight poster stands in for the YouTube player, so nothing from YouTube loads (and no
-// cookies are set) until the visitor presses play. Without JS the poster is a plain YouTube link.
+// The mix plays on the page in a youtube-nocookie embed driven by the IFrame API with our own controls.
+// Nothing from YouTube loads until the first play. The player sits under an inert, cropped stage and a
+// click-swallowing shield, so visitors can't reach YouTube's title, channel, logo or suggested videos,
+// and playback stops just before the end so the end screen never shows.
+function loadYouTubeApi() {
+  if (window.YT && window.YT.Player) return Promise.resolve(window.YT);
+  if (loadYouTubeApi.p) return loadYouTubeApi.p;
+  loadYouTubeApi.p = new Promise((resolve, reject) => {
+    const prev = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = () => { prev?.(); resolve(window.YT); };
+    const s = document.createElement('script');
+    s.src = 'https://www.youtube.com/iframe_api';
+    s.async = true;
+    s.onerror = () => { loadYouTubeApi.p = null; s.remove(); reject(new Error('YouTube API failed to load')); };
+    document.head.append(s);
+  });
+  return loadYouTubeApi.p;
+}
+
 function setupFeatured() {
   const frame = $('[data-yt]');
   if (!frame) return;
   const poster = $('.feat-poster', frame);
-  poster.addEventListener('click', (e) => {
-    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button > 0) return;
+  const shield = $('.feat-shield', frame);
+  const status = $('.feat-status', frame);
+  const controls = $('.feat-controls', frame);
+  const playBtn = $('.fc-play', frame);
+  const muteBtn = $('.fc-mute', frame);
+  const seek = $('.fc-seek', frame);
+  const vol = $('.fc-vol', frame);
+  const curEl = $('.fc-cur', frame);
+  const durEl = $('.fc-dur', frame);
+  const END_GUARD = 0.5; // seconds before the end where playback is cut, ahead of YouTube's end cards
+  let player = null;
+  let ready = false;
+  let playing = false;
+  let seeking = false;
+  let tick = 0;
+  let idleTimer = 0;
+  let autoplayCheck = 0;
+
+  const fmt = (t) => {
+    t = Math.max(0, Math.floor(t || 0));
+    const h = Math.floor(t / 3600), m = Math.floor((t % 3600) / 60), sec = String(t % 60).padStart(2, '0');
+    return h ? `${h}:${String(m).padStart(2, '0')}:${sec}` : `${m}:${sec}`;
+  };
+  const fill = (input) => input.style.setProperty('--p', `${(input.value / input.max) * 100}%`);
+  const duration = () => (ready ? player.getDuration() || 0 : 0);
+  const clampSeek = (t) => Math.max(0, Math.min(t, duration() - END_GUARD - 0.5));
+
+  function setPaused(paused) {
+    frame.classList.toggle('is-paused', paused);
+    playBtn.setAttribute('aria-label', paused ? 'Play' : 'Pause');
+    poster.setAttribute('aria-label', paused && frame.classList.contains('is-started') ? 'Resume HEAVEN GATES' : 'Play HEAVEN GATES, mixed by Waku');
+    shield.dataset.cursor = paused ? 'Play' : 'Pause';
+  }
+
+  function syncMute() {
+    const muted = player.isMuted() || player.getVolume() === 0;
+    frame.classList.toggle('is-muted', muted);
+    muteBtn.setAttribute('aria-pressed', String(muted));
+    muteBtn.setAttribute('aria-label', muted ? 'Unmute' : 'Mute');
+    vol.value = muted ? 0 : player.getVolume();
+    fill(vol);
+  }
+
+  function update() {
+    if (!ready) return;
+    const d = duration();
+    const t = player.getCurrentTime() || 0;
+    if (playing && d > 1 && t >= d - END_GUARD) { reset(); return; }
+    durEl.textContent = fmt(d);
+    if (!seeking) {
+      curEl.textContent = fmt(t);
+      seek.value = d ? Math.round((t / d) * 1000) : 0;
+      seek.setAttribute('aria-valuetext', `${fmt(t)} of ${fmt(d)}`);
+      fill(seek);
+    }
+  }
+
+  // back to the poster: stop the player so YouTube's end screen and suggestions never render
+  function reset() {
+    const hadFocus = frame.contains(document.activeElement);
+    playing = false;
+    clearInterval(tick);
+    clearTimeout(autoplayCheck);
+    if (ready) player.stopVideo();
+    frame.classList.remove('is-started', 'is-loading', 'is-idle');
+    setPaused(true);
+    controls.hidden = true;
+    seek.value = 0; fill(seek);
+    curEl.textContent = fmt(0);
+    if (hadFocus) poster.focus({ preventScroll: true });
+  }
+
+  function onState(e) {
+    const S = window.YT.PlayerState;
+    if (e.data === S.PLAYING) {
+      clearTimeout(autoplayCheck);
+      playing = true;
+      frame.classList.remove('is-loading');
+      frame.classList.add('is-started');
+      controls.hidden = false;
+      setPaused(false);
+      status.textContent = '';
+      clearInterval(tick);
+      tick = setInterval(update, 200);
+      syncMute();
+      update();
+      poke();
+    } else if (e.data === S.PAUSED) {
+      playing = false;
+      clearInterval(tick);
+      setPaused(true);
+      update();
+    } else if (e.data === S.ENDED) {
+      reset();
+    }
+  }
+
+  function onError(e) {
+    clearTimeout(autoplayCheck);
+    frame.classList.remove('is-loading', 'is-started');
+    controls.hidden = true;
+    // 101 / 150: the owner turned off embedding
+    status.textContent = e.data === 101 || e.data === 150
+      ? 'This video can’t be played here right now.'
+      : 'The video didn’t load. Try again.';
+  }
+
+  function start() {
+    frame.classList.add('is-loading');
+    status.textContent = '';
+    player.playVideo();
+    // phones may block playback with sound; fall back to muted play, the mute button turns sound on
+    clearTimeout(autoplayCheck);
+    autoplayCheck = setTimeout(() => {
+      if (!playing && ready) { player.mute(); player.playVideo(); }
+    }, 2500);
+  }
+
+  function play() {
+    if (ready) {
+      if (frame.classList.contains('is-started')) player.playVideo(); else start();
+      return;
+    }
+    if (player || frame.classList.contains('is-loading')) return; // still loading
+    frame.classList.add('is-loading');
+    loadYouTubeApi().then((YT) => {
+      player = new YT.Player($('.feat-player', frame), {
+        host: 'https://www.youtube-nocookie.com',
+        videoId: frame.dataset.yt,
+        width: '100%',
+        height: '100%',
+        playerVars: {
+          enablejsapi: 1, controls: 0, disablekb: 1, fs: 0, rel: 0, modestbranding: 1,
+          iv_load_policy: 3, playsinline: 1, cc_load_policy: 0, origin: location.origin,
+        },
+        events: {
+          onReady: () => {
+            ready = true;
+            const f = player.getIframe();
+            f.title = frame.dataset.ytTitle;
+            f.tabIndex = -1;
+            f.setAttribute('allow', 'autoplay; encrypted-media');
+            f.removeAttribute('allowfullscreen');
+            start();
+          },
+          onStateChange: onState,
+          onError,
+        },
+      });
+    }).catch(() => {
+      frame.classList.remove('is-loading');
+      status.textContent = 'The video didn’t load. Check your connection and try again.';
+    });
+  }
+
+  const toggle = () => (playing ? player.pauseVideo() : play());
+
+  // hide the controls after a moment without pointer movement while playing
+  function poke() {
+    frame.classList.remove('is-idle');
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => frame.classList.add('is-idle'), 2600);
+  }
+
+  poster.addEventListener('click', play);
+  // on touch, the first tap on a playing video brings the controls back instead of pausing
+  let pointerType = 'mouse';
+  shield.addEventListener('pointerdown', (e) => { pointerType = e.pointerType; });
+  shield.addEventListener('click', (e) => {
     e.preventDefault();
-    const f = document.createElement('iframe');
-    f.src = `https://www.youtube-nocookie.com/embed/${frame.dataset.yt}?autoplay=1&rel=0&playsinline=1`;
-    f.title = frame.dataset.ytTitle;
-    f.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
-    f.referrerPolicy = 'strict-origin-when-cross-origin';
-    f.allowFullscreen = true;
-    // the custom cursor can't follow the mouse inside the player, so hide it there
-    f.addEventListener('pointerenter', () => $('.cursor').classList.add('is-hidden'));
-    poster.replaceWith(f);
-    frame.classList.add('is-playing');
-    f.focus();
+    e.stopPropagation();
+    if (!ready) return;
+    if (pointerType === 'touch' && playing && frame.classList.contains('is-idle')) poke(); else toggle();
   });
+  shield.addEventListener('auxclick', (e) => e.preventDefault());
+  shield.addEventListener('contextmenu', (e) => e.preventDefault());
+  frame.addEventListener('pointermove', poke);
+  frame.addEventListener('focusin', poke);
+  playBtn.addEventListener('click', toggle);
+  muteBtn.addEventListener('click', () => {
+    if (!ready) return;
+    if (player.isMuted() || player.getVolume() === 0) {
+      player.unMute();
+      if (player.getVolume() === 0) player.setVolume(60);
+    } else player.mute();
+    setTimeout(syncMute, 80);
+  });
+  vol.addEventListener('input', () => {
+    if (!ready) return;
+    const v = Number(vol.value);
+    player.setVolume(v);
+    if (v > 0) player.unMute(); else player.mute();
+    fill(vol);
+    frame.classList.toggle('is-muted', v === 0);
+    muteBtn.setAttribute('aria-pressed', String(v === 0));
+    muteBtn.setAttribute('aria-label', v === 0 ? 'Unmute' : 'Mute');
+  });
+  seek.addEventListener('input', () => {
+    seeking = true;
+    const d = duration();
+    const t = (seek.value / 1000) * d;
+    curEl.textContent = fmt(t);
+    seek.setAttribute('aria-valuetext', `${fmt(t)} of ${fmt(d)}`);
+    fill(seek);
+  });
+  seek.addEventListener('change', () => {
+    seeking = false;
+    if (duration()) player.seekTo(clampSeek((seek.value / 1000) * duration()), true);
+  });
+  // k toggles play, j / l skip 10s, while focus is on the controls
+  controls.addEventListener('keydown', (e) => {
+    if (!ready || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.key === 'k') { e.preventDefault(); toggle(); }
+    else if (e.key === 'j' || e.key === 'l') {
+      e.preventDefault();
+      player.seekTo(clampSeek(player.getCurrentTime() + (e.key === 'l' ? 10 : -10)), true);
+    }
+  });
+  // stop the music once the section scrolls out of view
+  new IntersectionObserver(([en]) => { if (!en.isIntersecting && playing) player.pauseVideo(); }).observe(frame);
 }
 
 /* ------------------------------------------------------------------ boot */
