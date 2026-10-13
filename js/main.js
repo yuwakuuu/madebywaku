@@ -1,4 +1,4 @@
-import { projects, SITES } from './projects.js?v=5';
+import { projects, SITES } from './projects.js?v=6';
 
 window.__mbw = true;
 
@@ -69,8 +69,8 @@ const sound = (() => {
     node.connect(master);
     if (verb) { const send = c.createGain(); send.gain.value = verb; node.connect(send).connect(wet); }
   }
-  // one enveloped oscillator
-  function tone({ f = 600, f2 = 0, d = 0.08, type = 'sine', g = 0.05, delay = 0, attack = 0.006, verb = 0 }) {
+  // one enveloped oscillator; lp runs it through a lowpass so square/saw blips stay round, not harsh
+  function tone({ f = 600, f2 = 0, d = 0.08, type = 'sine', g = 0.05, delay = 0, attack = 0.006, verb = 0, lp = 0 }) {
     const c = audio();
     if (!c) return;
     const t = c.currentTime + 0.01 + delay;
@@ -82,18 +82,21 @@ const sound = (() => {
     amp.gain.setValueAtTime(0.0001, t);
     amp.gain.exponentialRampToValueAtTime(g, t + attack);
     amp.gain.exponentialRampToValueAtTime(0.0001, t + d);
-    o.connect(amp);
+    if (lp) {
+      const filt = c.createBiquadFilter();
+      filt.type = 'lowpass';
+      filt.frequency.value = lp;
+      filt.Q.value = 0.7;
+      o.connect(filt).connect(amp);
+    } else o.connect(amp);
     out(c, amp, verb);
     o.start(t);
     o.stop(t + d + 0.05);
   }
-  // a glassy bell: the fundamental plus quick-fading octave and inharmonic partials
-  function bell(f, { d = 0.9, g = 0.03, delay = 0, verb = 0.6 } = {}) {
-    tone({ f, d, g, delay, attack: 0.004, verb });
-    tone({ f: f * 2, d: d * 0.45, g: g * 0.22, delay, attack: 0.003, verb });
-    tone({ f: f * 2.76, d: d * 0.28, g: g * 0.12, delay, attack: 0.002, verb });
-  }
-  // band-passed noise sweeping f0 -> f1: whooshes and air
+  // a dry, punchy menu blip: a lowpassed square with a fast attack and a tiny pitch drop for snap
+  const blip = (f, { d = 0.05, g = 0.016, delay = 0, lp = 3200, type = 'square' } = {}) =>
+    tone({ f, f2: f * 0.97, d, g, delay, type, attack: 0.002, lp });
+  // band-passed noise sweeping f0 -> f1: whooshes, risers and (very short) transient clicks
   function air({ f0 = 500, f1 = 2500, d = 0.5, g = 0.03, q = 1.1, delay = 0, peak = 0.45, verb = 0 }) {
     const c = audio();
     if (!c) return;
@@ -114,6 +117,30 @@ const sound = (() => {
     src.start(t, Math.random() * 1.2);
     src.stop(t + d + 0.05);
   }
+  // a filter-swept saw swell for the startup stinger: the cutoff opens as the pitch climbs
+  function swell({ f, f2, d, g, delay = 0, cut0 = 300, cut1 = 4000, verb = 0.3, detune = 0 }) {
+    const c = audio();
+    if (!c) return;
+    const t = c.currentTime + 0.01 + delay;
+    const o = c.createOscillator();
+    o.type = 'sawtooth';
+    o.detune.value = detune;
+    o.frequency.setValueAtTime(f, t);
+    o.frequency.exponentialRampToValueAtTime(f2, t + d);
+    const filt = c.createBiquadFilter();
+    filt.type = 'lowpass';
+    filt.Q.value = 2;
+    filt.frequency.setValueAtTime(cut0, t);
+    filt.frequency.exponentialRampToValueAtTime(cut1, t + d);
+    const amp = c.createGain();
+    amp.gain.setValueAtTime(0.0001, t);
+    amp.gain.exponentialRampToValueAtTime(g, t + d * 0.92);
+    amp.gain.exponentialRampToValueAtTime(0.0001, t + d + 0.04);
+    o.connect(filt).connect(amp);
+    out(c, amp, verb);
+    o.start(t);
+    o.stop(t + d + 0.1);
+  }
   const throttled = (key, ms) => {
     const now = performance.now();
     if (now - (last[key] ?? -1e9) < ms) return true;
@@ -121,7 +148,11 @@ const sound = (() => {
     return false;
   };
 
-  return {
+  // The palette is modelled on a classic console pause menu: dry, short, lowpassed square blips
+  // with no reverb. A tick for moving between items, a lower two-tone accept, a soft falling
+  // back/cancel and a bright three-step arpeggio for leaving to another site.
+  let stung = false, stungAt = -1e9;
+  const api = {
     get on() { return on; },
     set(v) {
       on = v;
@@ -129,53 +160,84 @@ const sound = (() => {
       if (!v && ctx) ctx.suspend().catch(() => {});
       document.dispatchEvent(new Event('mbw:sound'));
     },
+    // moving the highlight (hover, keyboard focus): a crisp tick with a hint of noise transient
     hover(card) {
       if (throttled('hover', 70)) return;
-      if (card) tone({ f: 2350, d: 0.03, g: 0.009, attack: 0.002 });
-      else tone({ f: 1500, d: 0.035, g: 0.009, type: 'triangle', attack: 0.003 });
+      blip(card ? 1760 : 1480, { d: 0.032, g: 0.011, lp: 4200 });
+      air({ f0: 5200, f1: 4800, d: 0.012, g: 0.005, q: 1.5, peak: 0.2 });
     },
-    click() { if (!throttled('click', 40)) tone({ f: 1050, f2: 700, d: 0.06, g: 0.03, attack: 0.002 }); },
-    nav() { tone({ f: 620, f2: 930, d: 0.08, g: 0.024, type: 'triangle', attack: 0.004 }); air({ f0: 1800, f1: 3600, d: 0.12, g: 0.006, q: 2 }); },
+    // a generic press: the same tick, a step lower and a touch longer
+    click() { if (!throttled('click', 40)) blip(1175, { d: 0.045, g: 0.016, lp: 3600 }); },
+    // in-page navigation: a select tick that hops up a fifth
+    nav() {
+      if (throttled('nav', 60)) return;
+      blip(988, { d: 0.04, g: 0.016 });
+      blip(1480, { d: 0.05, g: 0.014, delay: 0.045 });
+    },
+    // opening a project: accept into a sub-menu
     open() {
-      [783.99, 987.77, 1174.66, 1567.98].forEach((f, i) => bell(f, { d: 1.1, g: 0.022 - i * 0.003, delay: i * 0.055, verb: 0.7 }));
-      air({ f0: 700, f1: 3200, d: 0.35, g: 0.01, q: 0.9 });
+      blip(784, { d: 0.055, g: 0.02 });
+      blip(1175, { d: 0.08, g: 0.018, delay: 0.06 });
+      air({ f0: 900, f1: 2600, d: 0.14, g: 0.005, q: 1.2 });
     },
+    // back / cancel: a soft two-step fall, triangle so it reads gentler than accept
     close() {
-      tone({ f: 880, f2: 520, d: 0.18, g: 0.026, type: 'triangle', attack: 0.004, verb: 0.3 });
-      air({ f0: 2600, f1: 600, d: 0.26, g: 0.009, q: 1 });
+      tone({ f: 740, d: 0.06, g: 0.022, type: 'triangle', attack: 0.002, lp: 2600 });
+      tone({ f: 494, f2: 466, d: 0.11, g: 0.02, type: 'triangle', attack: 0.002, lp: 2200, delay: 0.065 });
     },
-    flip() { air({ f0: 1100, f1: 2800, d: 0.16, g: 0.011, q: 1.4 }); tone({ f: 1320, d: 0.04, g: 0.012, attack: 0.002 }); },
+    // left/right between projects: a double tick
+    flip() {
+      if (throttled('flip', 50)) return;
+      blip(1319, { d: 0.035, g: 0.013 });
+      blip(1319, { d: 0.03, g: 0.008, delay: 0.04 });
+    },
+    // accept: lower than the tick, two tones up a fourth
     confirm() {
       if (throttled('confirm', 250)) return;
-      bell(659.25, { d: 0.7, g: 0.028, verb: 0.5 });
-      bell(987.77, { d: 0.9, g: 0.026, delay: 0.085, verb: 0.55 });
-      bell(1318.51, { d: 1.1, g: 0.016, delay: 0.17, verb: 0.65 });
+      blip(587, { d: 0.06, g: 0.024, lp: 2800 });
+      blip(784, { d: 0.11, g: 0.022, lp: 2800, delay: 0.07 });
     },
-    // leaving for another site: a quick rising sweep that lifts into a bell
+    // leaving for another site: a quick bright saw arpeggio with a short lift of air
     visit() {
       if (throttled('visit', 250)) return;
-      tone({ f: 520, f2: 1560, d: 0.16, g: 0.026, type: 'triangle', attack: 0.004, verb: 0.3 });
-      air({ f0: 900, f1: 5200, d: 0.3, g: 0.012, q: 1.2, verb: 0.3 });
-      bell(1567.98, { d: 0.7, g: 0.016, delay: 0.1, verb: 0.6 });
+      [659, 988, 1319].forEach((f, i) => blip(f, { d: i === 2 ? 0.14 : 0.05, g: 0.018, delay: i * 0.05, lp: 4400, type: 'sawtooth' }));
+      air({ f0: 1400, f1: 5200, d: 0.2, g: 0.006, q: 1.4, delay: 0.08 });
     },
-    reveal() { if (!throttled('reveal', 1600)) air({ f0: 380, f1: 1500, d: 0.6, g: 0.012, q: 0.8, peak: 0.5, verb: 0.25 }); },
-    toggleOn() {
-      air({ f0: 600, f1: 3000, d: 0.3, g: 0.01, q: 1 });
-      bell(880, { d: 0.6, g: 0.026, verb: 0.5 });
-      bell(1318.51, { d: 0.9, g: 0.024, delay: 0.09, verb: 0.6 });
+    reveal() { if (!throttled('reveal', 1600)) air({ f0: 500, f1: 1600, d: 0.28, g: 0.008, q: 0.9, peak: 0.4 }); },
+    toggleOn() { if (!api.startup()) api.confirm(); },
+    // the load-up stinger (~1.3s): a noise riser and detuned saws climbing an octave as the filter
+    // opens, landing on a short punchy E major stab with a sub thump. Once per page load, never
+    // under reduced motion, and only when sound is on and the page has had a real gesture.
+    startup() {
+      if (stung || reduced || !audio()) return false;
+      stung = true;
+      stungAt = performance.now();
+      air({ f0: 300, f1: 6000, d: 1.05, g: 0.016, q: 0.8, peak: 0.95, verb: 0.2 });
+      swell({ f: 110, f2: 220, d: 1.05, g: 0.016, detune: -8 });
+      swell({ f: 165, f2: 330, d: 1.05, g: 0.012, detune: 9 });
+      const hit = 1.08;
+      [329.63, 415.3, 493.88, 659.25].forEach((f) => tone({ f, d: 0.32, g: 0.012, type: 'sawtooth', delay: hit, attack: 0.004, lp: 3000, verb: 0.35 }));
+      blip(1319, { d: 0.18, g: 0.012, delay: hit, lp: 5000 });
+      tone({ f: 110, f2: 45, d: 0.3, g: 0.07, delay: hit, attack: 0.003 });
+      air({ f0: 3000, f1: 1800, d: 0.05, g: 0.012, q: 0.7, delay: hit, peak: 0.1 });
+      return true;
     },
-    // the intro: an airy rise, a low swell and an E major pentatonic shimmer
-    intro() {
-      air({ f0: 220, f1: 4200, d: 1.4, g: 0.026, q: 0.7, peak: 0.72, verb: 0.4 });
-      tone({ f: 110, f2: 165, d: 1.5, g: 0.028, attack: 0.5 });
-      [659.25, 830.61, 987.77, 1244.51, 1318.51].forEach((f, i) => bell(f, { d: 1.3, g: 0.014, delay: 0.5 + i * 0.075, verb: 0.85 }));
+    // the intro's "Tap for sound" button
+    intro() { api.startup(); },
+    // the intro hands over; skipped while the stinger is still ringing
+    outro() { if (performance.now() - stungAt > 1400) air({ f0: 2400, f1: 400, d: 0.3, g: 0.01, q: 0.9, peak: 0.25 }); },
+    pulse() {
+      tone({ f: 120, f2: 48, d: 0.4, g: 0.1 });
+      blip(988, { d: 0.05, g: 0.014, delay: 0.02 });
+      blip(1480, { d: 0.07, g: 0.012, delay: 0.07 });
     },
-    outro() {
-      air({ f0: 2200, f1: 260, d: 0.6, g: 0.018, q: 0.8, peak: 0.3, verb: 0.3 });
-      tone({ f: 330, f2: 165, d: 0.55, g: 0.016, attack: 0.08 });
-    },
-    pulse() { tone({ f: 120, f2: 48, d: 0.45, g: 0.12 }); tone({ f: 900, f2: 1800, d: 0.2, g: 0.022, type: 'triangle', delay: 0.02 }); },
   };
+
+  // no intro this load (or it ended before sound could play): the stinger waits for the first real input
+  const first = () => { if (stung || (on && activated() && api.startup())) off(); };
+  const off = () => ['pointerup', 'keydown'].forEach((t) => window.removeEventListener(t, first, true));
+  ['pointerup', 'keydown'].forEach((t) => window.addEventListener(t, first, { capture: true, passive: true }));
+  return api;
 })();
 
 const buzz = (ms = 8) => {
@@ -201,6 +263,16 @@ function setupSoundToggle() {
     if (e.pointerType !== 'mouse' || !sound.on) return;
     const el = e.target.closest(hoverables);
     if (el && !el.contains(e.relatedTarget)) sound.hover(el.classList.contains('card'));
+  });
+  // keyboard focus moving between items ticks like menu up/down
+  let keyNavAt = -1e9;
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Tab' || e.key.startsWith('Arrow')) keyNavAt = performance.now();
+  }, { capture: true, passive: true });
+  document.addEventListener('focusin', (e) => {
+    if (!sound.on || performance.now() - keyNavAt > 300) return;
+    const el = e.target.closest?.(hoverables);
+    if (el) sound.hover(el.classList.contains('card'));
   });
   // navigation, quote/contact and visit-site actions get their own sounds; other presses tick in setupPress
   document.addEventListener('click', (e) => {
@@ -270,7 +342,7 @@ const intro = (() => {
       if (el.contains(document.activeElement)) document.activeElement.blur();
       el.classList.toggle('is-fast', fast);
       root.classList.add('intro-out', 'hero-enter');
-      sound.outro();
+      if (!sound.startup()) sound.outro();
       resolve(true);
       setTimeout(() => { el.remove(); root.classList.remove('intro-on', 'intro-out'); }, fast ? 450 : 800);
     }
