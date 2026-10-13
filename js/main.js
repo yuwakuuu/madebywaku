@@ -733,7 +733,7 @@ function setupScroll() {
       navLinks.forEach((a) => a.classList.toggle('is-active', a.getAttribute('href') === `#${en.target.id}`));
     }
   }, { rootMargin: '-45% 0px -50% 0px' });
-  ['services', 'work', 'about', 'process', 'contact'].forEach((id) => io.observe(document.getElementById(id)));
+  ['services', 'work', 'featured', 'about', 'process', 'contact'].forEach((id) => io.observe(document.getElementById(id)));
   const hero = $('.hero');
   new IntersectionObserver(([en]) => { if (en.isIntersecting) navLinks.forEach((a) => a.classList.remove('is-active')); }, { rootMargin: '-45% 0px -50% 0px' }).observe(hero);
 }
@@ -960,6 +960,30 @@ function setupOffscreen() {
   $$('.hero, .marquee, .svc-grid, .svc-cta, .loop-stage, .contact-card, .grid').forEach((el) => io.observe(el));
 }
 
+/* ------------------------------------------------------------------ featured video */
+// A lightweight poster stands in for the YouTube player, so nothing from YouTube loads (and no
+// cookies are set) until the visitor presses play. Without JS the poster is a plain YouTube link.
+function setupFeatured() {
+  const frame = $('[data-yt]');
+  if (!frame) return;
+  const poster = $('.feat-poster', frame);
+  poster.addEventListener('click', (e) => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button > 0) return;
+    e.preventDefault();
+    const f = document.createElement('iframe');
+    f.src = `https://www.youtube-nocookie.com/embed/${frame.dataset.yt}?autoplay=1&rel=0&playsinline=1`;
+    f.title = frame.dataset.ytTitle;
+    f.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+    f.referrerPolicy = 'strict-origin-when-cross-origin';
+    f.allowFullscreen = true;
+    // the custom cursor can't follow the mouse inside the player, so hide it there
+    f.addEventListener('pointerenter', () => $('.cursor').classList.add('is-hidden'));
+    poster.replaceWith(f);
+    frame.classList.add('is-playing');
+    f.focus();
+  });
+}
+
 /* ------------------------------------------------------------------ boot */
 $('#year').textContent = new Date().getFullYear();
 setupSoundToggle();
@@ -979,3 +1003,4 @@ setupMenu();
 setupFilters();
 setupModal();
 setupContact();
+setupFeatured();
