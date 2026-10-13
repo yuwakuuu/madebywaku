@@ -816,7 +816,7 @@ function setupSites() {
     $(`.card[data-project="${p.id}"]`).after(a);
   });
   const box = $('.live-sites');
-  const live = [['The TOB Company', SITES.tob], ['EdgarBooks', SITES.edgarbooks], ['FIN', SITES.fin]].filter(([, url]) => url);
+  const live = [['FIN', SITES.fin], ['EdgarBooks', SITES.edgarbooks], ['The TOB Company', SITES.tob]].filter(([, url]) => url);
   live.forEach(([name, url]) => {
     const li = document.createElement('li');
     li.append(siteLink(url, name, 'btn ghost small live-site'));
