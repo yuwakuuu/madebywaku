@@ -27,7 +27,7 @@
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet"></noscript>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=8">
 <script type="importmap">
 {
   "imports": {
@@ -43,7 +43,7 @@ var seen=false;try{seen=sessionStorage.getItem('mbw-intro')==='1'}catch(e){}
 if(!seen&&!location.hash&&!matchMedia('(prefers-reduced-motion: reduce)').matches)d.classList.add('intro-on');})();
 </script>
 <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js" crossorigin>
-<script type="module" src="js/main.js?v=7"></script>
+<script type="module" src="js/main.js?v=8"></script>
 </head>
 <body>
 
@@ -289,8 +289,9 @@ if(!seen&&!location.hash&&!matchMedia('(prefers-reduced-motion: reduce)').matche
           </span>
           <span class="glare" aria-hidden="true"></span>
         </button>
-        <button class="btn ghost small tobd-open card-demo" type="button" aria-haspopup="dialog" data-cursor="Talk" data-tobd-show hidden>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg><span>Talk to TOB<span class="sr-only"> (scripted demo)</span></span></button>
+        <button class="btn tobd-open card-demo" type="button" aria-haspopup="dialog" data-cursor="Talk" data-tobd-show hidden>
+          <span class="card-demo-dot" aria-hidden="true"></span><span>Talk to TOB<span class="sr-only"> (scripted demo)</span></span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg></button>
       </li>
       <li class="card-wrap reveal" data-cat="ai business" style="--i:1">
         <button class="card" type="button" data-project="fin" style="--h1:150;--h2:200">

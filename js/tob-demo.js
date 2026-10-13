@@ -534,6 +534,14 @@ function respond(text) {
 export function setupTobDemo({ reduced = false, onOpen, onClose } = {}) {
   const dlg = document.getElementById('tob-demo');
   if (!dlg) return null;
+  // Without its stylesheet the dialog renders as raw, unstyled markup (seen when a browser paired
+  // this script with a stale cached style.css), so the demo stays hidden until .tobd's rules apply.
+  if (!getComputedStyle(dlg).getPropertyValue('--tobd-ready').trim()) {
+    console.warn('Talk to TOB: demo styles missing, keeping the demo hidden');
+    // inline, because an old stylesheet's .btn display rule beats the hidden attribute
+    document.querySelectorAll('.tobd-open').forEach((b) => { b.style.display = 'none'; });
+    return null;
+  }
   const $ = (s) => dlg.querySelector(s);
   const canvas = $('.tobd-canvas');
   const holoBtn = $('.tobd-holo-btn');

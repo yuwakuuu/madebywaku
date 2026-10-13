@@ -976,13 +976,41 @@ html:has(.modal[open]) { overflow: hidden; }
 .modal-actions .modal-visit { margin-top: 0; }
 .modal-actions:not(:has(> :not([hidden]))) { display: none; }
 .modal-demo[hidden], .card-demo[hidden], .tobd [hidden] { display: none !important; }
-/* Talk to TOB on the card: pinned to the thumbnail's top-right corner, clear of Read case study and Visit site */
-.card-demo { position: absolute; z-index: 5; top: 12px; right: 12px; padding: 7px 13px; font-size: .82rem; gap: 6px; background: rgba(10, 12, 18, .6); }
-.card-demo svg, .modal-demo svg { width: 15px; height: 15px; }
-.card-demo:hover svg, .modal-demo:hover svg { transform: none; }
+/* Talk to TOB on the card: a frosted holo pill pinned inside the thumbnail's top-right corner, clear of
+   the number, the icon, Read case study and Visit site. It's a sibling of the card <button>, not inside it. */
+.card-demo {
+  --holo: #6fd8ff;
+  position: absolute; z-index: 5; top: 14px; right: 14px;
+  height: 38px; padding: 0 14px 0 12px; gap: 8px;
+  font: 600 .84rem/1 var(--body); letter-spacing: -.005em; color: #eaf8ff;
+  background: rgba(6, 10, 16, .55); border: 1px solid rgba(111, 216, 255, .38);
+  backdrop-filter: blur(12px) saturate(1.4); -webkit-backdrop-filter: blur(12px) saturate(1.4);
+  box-shadow: 0 8px 24px -10px rgba(0, 0, 0, .7), inset 0 1px 0 rgba(255, 255, 255, .08);
+  transition: transform .4s var(--spring), background .3s, border-color .3s, box-shadow .3s, color .3s;
+}
+.card-demo svg { width: 15px; height: 15px; opacity: .75; transition: transform .35s var(--spring), opacity .3s; }
+.card-demo-dot {
+  flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--holo);
+  box-shadow: 0 0 0 0 rgba(111, 216, 255, .6), 0 0 10px var(--holo); animation: tobd-beacon 2.4s ease-out infinite;
+}
+@keyframes tobd-beacon { 0% { box-shadow: 0 0 0 0 rgba(111, 216, 255, .55), 0 0 10px var(--holo); } 70%, 100% { box-shadow: 0 0 0 7px rgba(111, 216, 255, 0), 0 0 10px var(--holo); } }
+.card-demo:hover, .card-demo:focus-visible {
+  transform: translateY(-2px); color: #fff;
+  background: rgba(14, 40, 58, .72); border-color: rgba(111, 216, 255, .75);
+  box-shadow: 0 12px 30px -10px rgba(0, 0, 0, .7), 0 0 26px -6px rgba(111, 216, 255, .6), inset 0 1px 0 rgba(255, 255, 255, .12);
+}
+.card-demo:hover svg, .card-demo:focus-visible svg { transform: translateX(1px) rotate(-8deg); opacity: 1; }
+.card-demo:active { transform: translateY(0) scale(.97); }
+.card-demo:focus-visible { outline: 2px solid var(--holo); outline-offset: 3px; border-radius: 999px; }
+@media (pointer: coarse) { .card-demo { height: 42px; padding: 0 16px 0 14px; } }
+.modal-demo svg { width: 15px; height: 15px; }
+.modal-demo:hover svg { transform: none; }
+.modal-demo { border-color: rgba(111, 216, 255, .4); }
+.modal-demo:hover { border-color: rgba(111, 216, 255, .8); box-shadow: 0 0 24px -8px rgba(111, 216, 255, .6); }
 
 .tobd {
   --holo: #6fd8ff;
+  --tobd-ready: 1;   /* js/tob-demo.js only reveals the demo once it can see this (i.e. these styles loaded) */
   width: min(980px, calc(100% - 24px));
 }
 .tobd-inner {
@@ -1083,5 +1111,5 @@ html:has(.modal[open]) { overflow: hidden; }
   .about-statement .w { opacity: 1 !important; animation: none !important; }
   .marquee-group { animation: none !important; }
   .marquee { overflow-x: auto; }
-  .tobd-mic[aria-pressed="true"] { animation: none !important; }
+  .tobd-mic[aria-pressed="true"], .card-demo-dot { animation: none !important; }
 }
