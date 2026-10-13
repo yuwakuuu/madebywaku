@@ -1,4 +1,4 @@
-import { projects } from './projects.js';
+import { projects, SITES } from './projects.js';
 
 window.__mbw = true;
 
@@ -151,6 +151,13 @@ const sound = (() => {
       bell(987.77, { d: 0.9, g: 0.026, delay: 0.085, verb: 0.55 });
       bell(1318.51, { d: 1.1, g: 0.016, delay: 0.17, verb: 0.65 });
     },
+    // leaving for another site: a quick rising sweep that lifts into a bell
+    visit() {
+      if (throttled('visit', 250)) return;
+      tone({ f: 520, f2: 1560, d: 0.16, g: 0.026, type: 'triangle', attack: 0.004, verb: 0.3 });
+      air({ f0: 900, f1: 5200, d: 0.3, g: 0.012, q: 1.2, verb: 0.3 });
+      bell(1567.98, { d: 0.7, g: 0.016, delay: 0.1, verb: 0.6 });
+    },
     reveal() { if (!throttled('reveal', 1600)) air({ f0: 380, f1: 1500, d: 0.6, g: 0.012, q: 0.8, peak: 0.5, verb: 0.25 }); },
     toggleOn() {
       air({ f0: 600, f1: 3000, d: 0.3, g: 0.01, q: 1 });
@@ -195,11 +202,12 @@ function setupSoundToggle() {
     const el = e.target.closest(hoverables);
     if (el && !el.contains(e.relatedTarget)) sound.hover(el.classList.contains('card'));
   });
-  // navigation and quote/contact actions get their own sounds; other presses tick in setupPress
+  // navigation, quote/contact and visit-site actions get their own sounds; other presses tick in setupPress
   document.addEventListener('click', (e) => {
     const el = e.target.closest('a, button');
     if (!el || !sound.on) return;
     if (el.matches('[data-sound="confirm"]')) sound.confirm();
+    else if (el.matches('[data-sound="visit"]')) sound.visit();
     else if (el.matches('.links a, .to-top, .scroll-cue, .skip')) sound.nav();
   });
 }
@@ -629,7 +637,7 @@ function setupPress() {
     el.classList.remove('pressed');
     void el.offsetWidth;
     el.classList.add('pressed');
-    if (!el.matches('[data-sound="confirm"], .sound-toggle')) sound.click();
+    if (!el.matches('[data-sound="confirm"], [data-sound="visit"], .sound-toggle')) sound.click();
     buzz(10);
   });
   document.addEventListener('animationend', (e) => { if (e.animationName === 'press') e.target.classList.remove('pressed'); });
@@ -786,6 +794,37 @@ function setupFilters() {
   }));
 }
 
+/* ------------------------------------------------------------------ live sites */
+// Visit site links for projects with a public display site (SITES in projects.js). Cards are
+// <button>s, so each card's link sits beside it in the card-wrap rather than inside it.
+function siteLink(url, label, className) {
+  const a = document.createElement('a');
+  a.className = className;
+  a.href = url;
+  a.target = '_blank';
+  a.rel = 'noopener noreferrer';
+  a.dataset.sound = 'visit';
+  a.dataset.cursor = 'Visit';
+  a.innerHTML = `<span>${label}</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg>`;
+  return a;
+}
+function setupSites() {
+  projects.forEach((p) => {
+    if (!p.site) return;
+    const a = siteLink(p.site, 'Visit site', 'btn ghost small card-visit');
+    a.setAttribute('aria-label', `Visit the ${p.title} site (opens in a new tab)`);
+    $(`.card[data-project="${p.id}"]`).after(a);
+  });
+  const box = $('.live-sites');
+  const live = [['The TOB Company', SITES.tob], ['EdgarBooks', SITES.edgarbooks], ['FIN', SITES.fin]].filter(([, url]) => url);
+  live.forEach(([name, url]) => {
+    const li = document.createElement('li');
+    li.append(siteLink(url, name, 'btn ghost small live-site'));
+    $('.live-sites-list', box).append(li);
+  });
+  box.hidden = !live.length;
+}
+
 /* ------------------------------------------------------------------ project modal */
 function setupModal() {
   const dlg = $('#modal');
@@ -812,6 +851,12 @@ function setupModal() {
     $('.modal-tag', dlg).textContent = p.tag;
     $('.modal-title', dlg).textContent = p.title;
     $('.modal-summary', dlg).textContent = p.summary;
+    const visit = $('.modal-visit', dlg);
+    visit.hidden = !p.site;
+    if (p.site) {
+      visit.href = p.site;
+      visit.setAttribute('aria-label', `Visit the ${p.title} site (opens in a new tab)`);
+    }
     $('.modal-features', dlg).innerHTML = p.features.map((f, i) => `<li style="--i:${i}">${esc(f)}</li>`).join('');
     $('.modal-tech', dlg).innerHTML = p.tech.map((t) => `<li>${esc(t)}</li>`).join('');
     $('.modal-facts', dlg).innerHTML = Object.entries(p.facts).map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('');
@@ -1001,6 +1046,7 @@ setupMarquee();
 setupScroll();
 setupMenu();
 setupFilters();
+setupSites();
 setupModal();
 setupContact();
 setupFeatured();

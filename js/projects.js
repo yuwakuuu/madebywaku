@@ -1,5 +1,17 @@
 // Case-study detail for each project card. Card markup lives in index.html; ids match data-project.
 // summary = what it is, features = what I built, tech = tech and skills used.
+// site = public display site; null keeps its Visit site buttons hidden.
+
+// Public display sites, also listed under Live sites in the contact section.
+// TOB is served from my PC through Tailscale Funnel, so it is only up while that PC is on.
+export const SITES = {
+  tob: 'https://yuwakuonline.tail28063a.ts.net:8443/',
+  // TODO(fin-site): the FIN display site (C:\Dev\fin-website) is not hosted publicly yet. Paste its URL here.
+  fin: null,
+  // TODO(edgarbooks-site): EdgarBooks has no public display site yet. Paste its URL here.
+  edgarbooks: null,
+};
+
 export const projects = [
   {
     id: 'kingdomrp-server',
@@ -45,6 +57,7 @@ export const projects = [
     ],
     facts: { Type: 'AI assistant', Role: 'Butler, operator, co-builder', Departments: 'FIN (markets)' },
     links: ['fin', 'tob-company', 'kingdomrp-server'],
+    site: SITES.tob,
     tech: ['AI tools', 'Automation', 'Server operations', 'Pair programming'],
   },
   {
@@ -61,6 +74,7 @@ export const projects = [
     ],
     facts: { Type: 'Research lab', 'Part of': 'TOB', Money: 'Simulated only' },
     links: ['tob'],
+    site: SITES.fin,
     tech: ['Machine learning', 'Backtesting', 'Live market data', 'Paper trading', 'Risk controls'],
   },
   {
@@ -77,6 +91,7 @@ export const projects = [
     ],
     facts: { Type: 'Business software', For: 'Small service companies', Region: 'Arizona payroll rules' },
     links: ['tqm'],
+    site: SITES.edgarbooks,
     tech: ['Web application', 'Online payments', 'Payroll rules', 'Client portal'],
   },
   {
@@ -105,6 +120,7 @@ export const projects = [
     ],
     facts: { Type: 'Website', About: 'TOB and its tools' },
     links: ['tob', 'fin'],
+    site: SITES.tob,
     tech: ['Web design', 'Responsive site'],
   },
 ];

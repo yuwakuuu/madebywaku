@@ -627,6 +627,11 @@ h2 { font: 700 clamp(2.2rem, 5.2vw, 4rem)/1 var(--display); letter-spacing: -.03
 }
 .card-more svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .card:hover .card-more { opacity: 1; gap: 10px; color: hsl(var(--h1) 85% 75%); }
+/* Visit site: a link beside the card <button>, pinned to the card's bottom-right corner */
+.card-wrap { position: relative; }
+.card-visit { position: absolute; z-index: 5; right: 18px; bottom: 18px; padding: 8px 14px; font-size: .84rem; gap: 6px; background: rgba(10, 12, 18, .6); }
+.card-visit svg { width: 15px; height: 15px; }
+.card-visit:hover svg, .modal-visit:hover svg, .live-site:hover svg { transform: translate(2px, -2px); }
 
 /* ============ about ============ */
 .about-grid { display: grid; grid-template-columns: 1.25fr 1fr; gap: 64px; align-items: start; }
@@ -701,6 +706,11 @@ h2 { font: 700 clamp(2.2rem, 5.2vw, 4rem)/1 var(--display); letter-spacing: -.03
 .contact-link span { display: flex; flex-direction: column; min-width: 0; }
 .contact-link strong { font: 600 1.02rem/1.3 var(--display); }
 .contact-link small { color: var(--muted); font-size: .85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.live-sites { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; margin-top: 28px; max-width: 820px; }
+.live-sites-title { font: 500 .75rem/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--dim); }
+.live-sites-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.contact-card .btn.live-site { gap: 8px; width: auto; }
+.live-site svg { width: 15px; height: 15px; }
 
 /* ============ footer ============ */
 .footer {
@@ -742,6 +752,8 @@ h2 { font: 700 clamp(2.2rem, 5.2vw, 4rem)/1 var(--display); letter-spacing: -.03
 .modal-body { padding: 28px clamp(20px, 4vw, 40px) 12px; overflow-y: auto; overscroll-behavior: contain; }
 .modal-title { font-size: clamp(2rem, 5vw, 3rem); margin: 14px 0 12px; }
 .modal-summary { color: #c8ccd8; font-size: 1.08rem; max-width: 680px; }
+.modal-visit { margin-top: 20px; }
+.modal-visit[hidden], .live-sites[hidden] { display: none; }
 .modal-cols { display: grid; grid-template-columns: 1.3fr 1fr; gap: 32px; margin: 28px 0 16px; }
 .modal-label, .modal-cols h3 { font: 500 .75rem/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--dim); margin-bottom: 14px; }
 .modal-features { display: grid; gap: 10px; }
